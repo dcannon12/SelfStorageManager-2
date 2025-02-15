@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { SearchIcon, FilterIcon, EditIcon, TrashIcon } from "lucide-react";
+import { Search, Filter as FilterIcon, Edit as EditIcon, Trash as TrashIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import {
@@ -23,13 +23,17 @@ import {
 import { UnitDialog } from "@/components/dialogs/unit-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
 
 export default function UnitsPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { data: units, isLoading } = useQuery<Unit[]>({
     queryKey: ["/api/units"],
+    queryFn: async () => {
+      const response = await fetch("/api/units");
+      if (!response.ok) throw new Error("Failed to fetch units");
+      return response.json();
+    }
   });
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -41,11 +45,17 @@ export default function UnitsPage() {
   );
 
   const updateUnitStatus = useMutation({
-    mutationFn: ({ id, isOccupied }: { id: number; isOccupied: boolean }) =>
-      apiRequest(`/api/units/${id}/status`, {
+    mutationFn: async ({ id, isOccupied }: { id: number; isOccupied: boolean }) => {
+      const response = await fetch(`/api/units/${id}/status`, {
         method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({ isOccupied }),
-      }),
+      });
+      if (!response.ok) throw new Error("Failed to update unit status");
+      return response.json();
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/units"] });
       toast({
@@ -56,10 +66,13 @@ export default function UnitsPage() {
   });
 
   const deleteUnit = useMutation({
-    mutationFn: (id: number) =>
-      apiRequest(`/api/units/${id}`, {
+    mutationFn: async (id: number) => {
+      const response = await fetch(`/api/units/${id}`, {
         method: "DELETE",
-      }),
+      });
+      if (!response.ok) throw new Error("Failed to delete unit");
+      return response.json();
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/units"] });
       toast({
@@ -78,7 +91,7 @@ export default function UnitsPage() {
 
       <div className="flex gap-4 mb-6">
         <div className="relative flex-1">
-          <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
           <Input 
             placeholder="Search units by location, type, or size..."
             className="pl-10"

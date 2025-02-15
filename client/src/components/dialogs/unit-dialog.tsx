@@ -28,11 +28,12 @@ import { InsertUnit, insertUnitSchema, unitTypes } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
+import { Plus } from "lucide-react";
 
 export function UnitDialog() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  
+
   const form = useForm<InsertUnit>({
     resolver: zodResolver(insertUnitSchema),
     defaultValues: {
@@ -44,11 +45,19 @@ export function UnitDialog() {
   });
 
   const createUnit = useMutation({
-    mutationFn: (data: InsertUnit) =>
-      apiRequest("/api/units", {
+    mutationFn: async (data: InsertUnit) => {
+      const response = await fetch("/api/units", {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(data),
-      }),
+      });
+      if (!response.ok) {
+        throw new Error("Failed to create unit");
+      }
+      return response.json();
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/units"] });
       toast({
@@ -73,7 +82,7 @@ export function UnitDialog() {
     <Dialog>
       <DialogTrigger asChild>
         <Button className="flex items-center gap-2">
-          <PlusIcon className="h-4 w-4" />
+          <Plus className="h-4 w-4" />
           Add New Unit
         </Button>
       </DialogTrigger>
