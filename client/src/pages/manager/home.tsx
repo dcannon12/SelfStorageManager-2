@@ -2,7 +2,6 @@ import { ManagerLayout } from "@/components/manager-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { Unit, Booking, Payment } from "@shared/schema";
-import { DollarSign, Users, BoxSelect, AlertCircle } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
 
 export default function ManagerHome() {
@@ -18,37 +17,105 @@ export default function ManagerHome() {
     queryKey: ["/api/payments"],
   });
 
+  // Calculate stats
   const stats = {
     totalUnits: units?.length ?? 0,
     occupiedUnits: units?.filter(u => u.isOccupied).length ?? 0,
     activeBookings: bookings?.filter(b => b.status === "active").length ?? 0,
-    monthlyRevenue: units?.reduce((sum, unit) => 
-      unit.isOccupied ? sum + unit.price : sum, 0
-    ) ?? 0,
     scheduledMoveOuts: 0,
     lateUnits: 0,
     auctionUnits: 0,
     availableUnits: units?.filter(u => !u.isOccupied).length ?? 0
   };
 
-  // Mock data for demonstration - replace with real data from API
+  // Get payments due in next 30 days
+  const today = new Date();
+  const thirtyDaysFromNow = new Date(today.getTime() + (30 * 24 * 60 * 60 * 1000));
+  const upcomingPayments = payments?.filter(payment => {
+    const paymentDate = new Date(payment.createdAt);
+    return paymentDate <= thirtyDaysFromNow && payment.status === 'pending';
+  });
+
+  const totalUpcomingPayments = upcomingPayments?.reduce((sum, payment) => sum + payment.amount, 0) ?? 0;
+
+  // Calculate revenue for the last 3 months
+  const getMonthlyRevenue = (payments: Payment[] | undefined, monthsAgo: number) => {
+    if (!payments) return 0;
+    const targetMonth = new Date();
+    targetMonth.setMonth(targetMonth.getMonth() - monthsAgo);
+    return payments
+      .filter(payment => {
+        const paymentDate = new Date(payment.createdAt);
+        return paymentDate.getMonth() === targetMonth.getMonth() &&
+               paymentDate.getFullYear() === targetMonth.getFullYear() &&
+               payment.status === 'completed';
+      })
+      .reduce((sum, payment) => sum + payment.amount, 0);
+  };
+
   const revenueData = [
-    { month: 'Feb', revenue: 19684.81 },
-    { month: 'Jan', revenue: 18500.00 },
-    { month: 'Dec', revenue: 17800.00 },
-    // ... more months
+    { month: 'Dec', revenue: getMonthlyRevenue(payments, 2) },
+    { month: 'Jan', revenue: getMonthlyRevenue(payments, 1) },
+    { month: 'Feb', revenue: getMonthlyRevenue(payments, 0) }
   ];
 
-  const occupancyData = Array.from({ length: 12 }).map((_, i) => ({
-    date: `2024-${(i + 1).toString().padStart(2, '0')}`,
-    rate: 87 + Math.random() * 2 - 1
-  }));
+  // Calculate month-over-month change
+  const currentMonthRevenue = revenueData[2].revenue;
+  const lastMonthRevenue = revenueData[1].revenue;
+  const twoMonthsAgoRevenue = revenueData[0].revenue;
 
+  const monthOverMonthChange = lastMonthRevenue ? 
+    ((currentMonthRevenue - lastMonthRevenue) / lastMonthRevenue) * 100 : 0;
+
+  const previousMonthChange = twoMonthsAgoRevenue ? 
+    ((lastMonthRevenue - twoMonthsAgoRevenue) / twoMonthsAgoRevenue) * 100 : 0;
+
+  // Calculate occupancy rate over time
+  const calculateOccupancyRate = (bookings: Booking[] | undefined, date: Date) => {
+    if (!bookings || !units) return 0;
+    const activeOnDate = bookings.filter(booking => {
+      const startDate = new Date(booking.startDate);
+      const endDate = booking.endDate ? new Date(booking.endDate) : new Date();
+      return startDate <= date && date <= endDate;
+    }).length;
+    return (activeOnDate / (units.length || 1)) * 100;
+  };
+
+  const occupancyData = Array.from({ length: 12 }).map((_, i) => {
+    const date = new Date();
+    date.setMonth(date.getMonth() - (11 - i));
+    return {
+      date: `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}`,
+      rate: calculateOccupancyRate(bookings, date)
+    };
+  });
+
+  // Calculate current occupancy rate
+  const currentOccupancyRate = occupancyData[occupancyData.length - 1].rate;
+  const lastMonthOccupancyRate = occupancyData[occupancyData.length - 2].rate;
+  const yearAgoOccupancyRate = occupancyData[0].rate;
+
+  const occupancyMonthChange = ((currentOccupancyRate - lastMonthOccupancyRate) / lastMonthOccupancyRate) * 100;
+  const occupancyYearChange = ((currentOccupancyRate - yearAgoOccupancyRate) / yearAgoOccupancyRate) * 100;
+
+  // Payment status chart data
   const paymentStatusData = [
-    { name: '0-30 days', value: 75 },
-    { name: '31-60 days', value: 15 },
-    { name: '61-90 days', value: 7 },
-    { name: '90+ days', value: 3 },
+    { name: 'Due Today', value: upcomingPayments?.filter(p => new Date(p.createdAt).toDateString() === today.toDateString()).length ?? 0 },
+    { name: '1-7 days', value: upcomingPayments?.filter(p => {
+      const dueDate = new Date(p.createdAt);
+      const daysUntilDue = Math.floor((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+      return daysUntilDue > 0 && daysUntilDue <= 7;
+    }).length ?? 0 },
+    { name: '8-14 days', value: upcomingPayments?.filter(p => {
+      const dueDate = new Date(p.createdAt);
+      const daysUntilDue = Math.floor((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+      return daysUntilDue > 7 && daysUntilDue <= 14;
+    }).length ?? 0 },
+    { name: '15-30 days', value: upcomingPayments?.filter(p => {
+      const dueDate = new Date(p.createdAt);
+      const daysUntilDue = Math.floor((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+      return daysUntilDue > 14 && daysUntilDue <= 30;
+    }).length ?? 0 },
   ];
 
   const COLORS = ['#8BE8E5', '#45B7B4', '#2D7472', '#1A4342'];
@@ -71,7 +138,7 @@ export default function ManagerHome() {
           <Card className="col-span-1">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-base font-medium">Revenue</CardTitle>
-              <span className="text-2xl font-bold">${stats.monthlyRevenue.toFixed(2)}</span>
+              <span className="text-2xl font-bold">${currentMonthRevenue.toLocaleString()}</span>
             </CardHeader>
             <CardContent>
               <BarChart width={300} height={200} data={revenueData}>
@@ -81,8 +148,8 @@ export default function ManagerHome() {
                 <Bar dataKey="revenue" fill="#8BE8E5" />
               </BarChart>
               <div className="mt-2 flex justify-between text-sm">
-                <span>↓ 3% From December 2024</span>
-                <span>↓ 20% From January 2024</span>
+                <span>{monthOverMonthChange >= 0 ? '↑' : '↓'} {Math.abs(monthOverMonthChange).toFixed(1)}% From January</span>
+                <span>{previousMonthChange >= 0 ? '↑' : '↓'} {Math.abs(previousMonthChange).toFixed(1)}% From December</span>
               </div>
             </CardContent>
           </Card>
@@ -91,7 +158,7 @@ export default function ManagerHome() {
           <Card className="col-span-1">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-base font-medium">Occupancy</CardTitle>
-              <span className="text-2xl font-bold">87%</span>
+              <span className="text-2xl font-bold">{currentOccupancyRate.toFixed(1)}%</span>
             </CardHeader>
             <CardContent>
               <LineChart width={300} height={200} data={occupancyData}>
@@ -101,8 +168,8 @@ export default function ManagerHome() {
                 <Line type="monotone" dataKey="rate" stroke="#8BE8E5" />
               </LineChart>
               <div className="mt-2 flex justify-between text-sm">
-                <span>↑ 1% From Last Month</span>
-                <span>↓ 6% From Last Year</span>
+                <span>{occupancyMonthChange >= 0 ? '↑' : '↓'} {Math.abs(occupancyMonthChange).toFixed(1)}% From Last Month</span>
+                <span>{occupancyYearChange >= 0 ? '↑' : '↓'} {Math.abs(occupancyYearChange).toFixed(1)}% From Last Year</span>
               </div>
             </CardContent>
           </Card>
@@ -110,8 +177,8 @@ export default function ManagerHome() {
           {/* Payment Status Chart */}
           <Card className="col-span-1">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-base font-medium">Awaiting Payment</CardTitle>
-              <span className="text-2xl font-bold">$5,949.86</span>
+              <CardTitle className="text-base font-medium">Upcoming Payments</CardTitle>
+              <span className="text-2xl font-bold">${totalUpcomingPayments.toLocaleString()}</span>
             </CardHeader>
             <CardContent>
               <div className="flex justify-center">
