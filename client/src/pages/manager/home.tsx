@@ -2,7 +2,7 @@ import { ManagerLayout } from "@/components/manager-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { Unit, Booking, Payment } from "@shared/schema";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, LineChart, Line, PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 
 export default function ManagerHome() {
   const { data: units } = useQuery<Unit[]>({
@@ -122,7 +122,7 @@ export default function ManagerHome() {
 
   return (
     <ManagerLayout>
-      <div className="space-y-6 p-6">
+      <div className="space-y-8 p-8">
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold">Dashboard</h1>
@@ -133,21 +133,25 @@ export default function ManagerHome() {
           </button>
         </div>
 
-        <div className="grid gap-6 grid-cols-1 lg:grid-cols-3">
+        <div className="grid gap-8 grid-cols-1 lg:grid-cols-3">
           {/* Revenue Chart */}
           <Card className="col-span-1">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-base font-medium">Revenue</CardTitle>
               <span className="text-2xl font-bold">${currentMonthRevenue.toLocaleString()}</span>
             </CardHeader>
-            <CardContent>
-              <BarChart width={300} height={200} data={revenueData}>
-                <XAxis dataKey="month" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="revenue" fill="#8BE8E5" />
-              </BarChart>
-              <div className="mt-2 flex justify-between text-sm">
+            <CardContent className="pt-4">
+              <div className="h-[240px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={revenueData} margin={{ top: 0, right: 0, bottom: 20, left: 0 }}>
+                    <XAxis dataKey="month" />
+                    <YAxis />
+                    <Tooltip />
+                    <Bar dataKey="revenue" fill="#8BE8E5" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="mt-6 flex justify-between text-sm">
                 <span>{monthOverMonthChange >= 0 ? '↑' : '↓'} {Math.abs(monthOverMonthChange).toFixed(1)}% From January</span>
                 <span>{previousMonthChange >= 0 ? '↑' : '↓'} {Math.abs(previousMonthChange).toFixed(1)}% From December</span>
               </div>
@@ -160,14 +164,18 @@ export default function ManagerHome() {
               <CardTitle className="text-base font-medium">Occupancy</CardTitle>
               <span className="text-2xl font-bold">{currentOccupancyRate.toFixed(1)}%</span>
             </CardHeader>
-            <CardContent>
-              <LineChart width={300} height={200} data={occupancyData}>
-                <XAxis dataKey="date" />
-                <YAxis domain={[80, 100]} />
-                <Tooltip />
-                <Line type="monotone" dataKey="rate" stroke="#8BE8E5" />
-              </LineChart>
-              <div className="mt-2 flex justify-between text-sm">
+            <CardContent className="pt-4">
+              <div className="h-[240px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={occupancyData} margin={{ top: 0, right: 0, bottom: 20, left: 0 }}>
+                    <XAxis dataKey="date" />
+                    <YAxis domain={[80, 100]} />
+                    <Tooltip />
+                    <Line type="monotone" dataKey="rate" stroke="#8BE8E5" strokeWidth={2} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="mt-6 flex justify-between text-sm">
                 <span>{occupancyMonthChange >= 0 ? '↑' : '↓'} {Math.abs(occupancyMonthChange).toFixed(1)}% From Last Month</span>
                 <span>{occupancyYearChange >= 0 ? '↑' : '↓'} {Math.abs(occupancyYearChange).toFixed(1)}% From Last Year</span>
               </div>
@@ -180,23 +188,25 @@ export default function ManagerHome() {
               <CardTitle className="text-base font-medium">Upcoming Payments</CardTitle>
               <span className="text-2xl font-bold">${totalUpcomingPayments.toLocaleString()}</span>
             </CardHeader>
-            <CardContent>
-              <div className="flex justify-center">
-                <PieChart width={200} height={200}>
-                  <Pie
-                    data={paymentStatusData}
-                    innerRadius={60}
-                    outerRadius={80}
-                    paddingAngle={2}
-                    dataKey="value"
-                  >
-                    {paymentStatusData.map((_, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                </PieChart>
+            <CardContent className="pt-4">
+              <div className="h-[240px] w-full flex items-center justify-center">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={paymentStatusData}
+                      innerRadius={60}
+                      outerRadius={80}
+                      paddingAngle={2}
+                      dataKey="value"
+                    >
+                      {paymentStatusData.map((_, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                  </PieChart>
+                </ResponsiveContainer>
               </div>
-              <div className="grid grid-cols-2 gap-2 mt-4 text-sm">
+              <div className="grid grid-cols-2 gap-4 mt-6 text-sm">
                 {paymentStatusData.map((item, index) => (
                   <div key={item.name} className="flex items-center gap-2">
                     <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS[index] }} />
@@ -209,22 +219,22 @@ export default function ManagerHome() {
         </div>
 
         {/* Key Metrics */}
-        <div className="grid grid-cols-4 gap-4">
-          <div className="text-center p-4 border rounded-lg">
+        <div className="grid grid-cols-4 gap-6">
+          <div className="text-center p-6 border rounded-lg bg-card">
             <div className="text-3xl font-bold">{stats.scheduledMoveOuts}</div>
-            <div className="text-sm text-muted-foreground">Scheduled Move Outs</div>
+            <div className="text-sm text-muted-foreground mt-2">Scheduled Move Outs</div>
           </div>
-          <div className="text-center p-4 border rounded-lg">
+          <div className="text-center p-6 border rounded-lg bg-card">
             <div className="text-3xl font-bold">{stats.lateUnits}</div>
-            <div className="text-sm text-muted-foreground">Late Units</div>
+            <div className="text-sm text-muted-foreground mt-2">Late Units</div>
           </div>
-          <div className="text-center p-4 border rounded-lg">
+          <div className="text-center p-6 border rounded-lg bg-card">
             <div className="text-3xl font-bold">{stats.auctionUnits}</div>
-            <div className="text-sm text-muted-foreground">Auction Units</div>
+            <div className="text-sm text-muted-foreground mt-2">Auction Units</div>
           </div>
-          <div className="text-center p-4 border rounded-lg">
+          <div className="text-center p-6 border rounded-lg bg-card">
             <div className="text-3xl font-bold">{stats.availableUnits}</div>
-            <div className="text-sm text-muted-foreground">Available Units</div>
+            <div className="text-sm text-muted-foreground mt-2">Available Units</div>
           </div>
         </div>
       </div>
