@@ -1,4 +1,7 @@
-import { type Unit, type Customer, type Booking, type InsertUnit, type InsertCustomer, type InsertBooking, unitSizeInfo } from "@shared/schema";
+import { type Unit, type Customer, type Booking, type InsertUnit, type InsertCustomer, type InsertBooking } from "@shared/schema";
+import { units, customers, bookings } from "@shared/schema";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
 
 export interface IStorage {
   // Units
@@ -17,88 +20,64 @@ export interface IStorage {
   updateBookingStatus(id: number, status: string): Promise<Booking>;
 }
 
-export class MemStorage implements IStorage {
-  private units: Map<number, Unit>;
-  private customers: Map<number, Customer>;
-  private bookings: Map<number, Booking>;
-  private currentIds: { units: number; customers: number; bookings: number };
-
-  constructor() {
-    this.units = new Map();
-    this.customers = new Map();
-    this.bookings = new Map();
-    this.currentIds = { units: 1, customers: 1, bookings: 1 };
-    
-    // Initialize with some sample units
-    Object.entries(unitSizeInfo).forEach(([type, info], index) => {
-      const unit: Unit = {
-        id: this.currentIds.units++,
-        type: type as Unit["type"],
-        size: info.size,
-        price: info.price,
-        isOccupied: false,
-        location: `Floor ${Math.floor(index / 4) + 1}, Block ${String.fromCharCode(65 + (index % 4))}`,
-      };
-      this.units.set(unit.id, unit);
-    });
-  }
-
+export class DatabaseStorage implements IStorage {
   async getUnits(): Promise<Unit[]> {
-    return Array.from(this.units.values());
+    return await db.select().from(units);
   }
 
   async getUnit(id: number): Promise<Unit | undefined> {
-    return this.units.get(id);
+    const [unit] = await db.select().from(units).where(eq(units.id, id));
+    return unit;
   }
 
   async createUnit(unit: InsertUnit): Promise<Unit> {
-    const id = this.currentIds.units++;
-    const newUnit = { ...unit, id, isOccupied: false };
-    this.units.set(id, newUnit);
+    const [newUnit] = await db.insert(units).values(unit).returning();
     return newUnit;
   }
 
   async updateUnitStatus(id: number, isOccupied: boolean): Promise<Unit> {
-    const unit = this.units.get(id);
-    if (!unit) throw new Error("Unit not found");
-    const updatedUnit = { ...unit, isOccupied };
-    this.units.set(id, updatedUnit);
+    const [updatedUnit] = await db
+      .update(units)
+      .set({ isOccupied })
+      .where(eq(units.id, id))
+      .returning();
+    if (!updatedUnit) throw new Error("Unit not found");
     return updatedUnit;
   }
 
   async getCustomer(id: number): Promise<Customer | undefined> {
-    return this.customers.get(id);
+    const [customer] = await db.select().from(customers).where(eq(customers.id, id));
+    return customer;
   }
 
   async createCustomer(customer: InsertCustomer): Promise<Customer> {
-    const id = this.currentIds.customers++;
-    const newCustomer = { ...customer, id };
-    this.customers.set(id, newCustomer);
+    const [newCustomer] = await db.insert(customers).values(customer).returning();
     return newCustomer;
   }
 
   async getBookings(): Promise<Booking[]> {
-    return Array.from(this.bookings.values());
+    return await db.select().from(bookings);
   }
 
   async createBooking(booking: InsertBooking): Promise<Booking> {
-    const id = this.currentIds.bookings++;
-    const newBooking = { ...booking, id };
-    this.bookings.set(id, newBooking);
+    const [newBooking] = await db.insert(bookings).values(booking).returning();
     await this.updateUnitStatus(booking.unitId, true);
     return newBooking;
   }
 
   async updateBookingStatus(id: number, status: string): Promise<Booking> {
-    const booking = this.bookings.get(id);
-    if (!booking) throw new Error("Booking not found");
-    const updatedBooking = { ...booking, status };
-    this.bookings.set(id, updatedBooking);
+    const [updatedBooking] = await db
+      .update(bookings)
+      .set({ status })
+      .where(eq(bookings.id, id))
+      .returning();
+    if (!updatedBooking) throw new Error("Booking not found");
+
     if (status === "completed" || status === "cancelled") {
-      await this.updateUnitStatus(booking.unitId, false);
+      await this.updateUnitStatus(updatedBooking.unitId, false);
     }
     return updatedBooking;
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
