@@ -1,4 +1,4 @@
-import { Bell, MessageSquare, Settings, Map } from "lucide-react";
+import { Bell, MessageSquare, Settings, Map, ChevronDown } from "lucide-react";
 import { Link } from "wouter";
 import {
   Drawer,
@@ -7,8 +7,20 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export function ManagerTopbar() {
+  const facilities = [
+    { id: 1, name: "Facility 1", code: "D.8451" },
+    { id: 2, name: "Facility 2", code: "D.8452" },
+    { id: 3, name: "Facility 3", code: "D.8453" },
+  ];
+
   const siteMap = [
     { heading: "Dashboard", items: [
       { name: "Home", path: "/manager" },
@@ -30,8 +42,21 @@ export function ManagerTopbar() {
   return (
     <div className="h-16 border-b border-border bg-background px-6 flex items-center justify-between">
       <div className="flex items-center gap-4">
-        <span className="text-sm text-muted-foreground">Budget Storage Florida - Fort Meade</span>
-        <span className="text-sm text-muted-foreground">Facility (D.8451)</span>
+        <DropdownMenu>
+          <DropdownMenuTrigger className="flex items-center gap-2 hover:bg-accent px-2 py-1 rounded-md">
+            <span className="text-sm">Facility 1</span>
+            <span className="text-sm text-muted-foreground">(D.8451)</span>
+            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            {facilities.map((facility) => (
+              <DropdownMenuItem key={facility.id} className="flex items-center gap-2">
+                <span>{facility.name}</span>
+                <span className="text-muted-foreground">({facility.code})</span>
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
         <Drawer>
           <DrawerTrigger asChild>
             <button className="p-2 rounded-full hover:bg-accent">
