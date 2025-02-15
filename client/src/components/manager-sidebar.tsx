@@ -7,8 +7,7 @@ import {
   Key,
   ClipboardList,
   DollarSign,
-  BarChart3,
-  MessageSquare
+  BarChart3
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -23,8 +22,7 @@ export function ManagerSidebar() {
     { href: "/manager/rentals", icon: ClipboardList, label: "Rentals" },
     { href: "/manager/payments", icon: DollarSign, label: "Payments" },
     { href: "/manager/reports", icon: BarChart3, label: "Reports" },
-    { href: "/manager/locks", icon: Key, label: "Locks" },
-    { href: "/manager/messaging", icon: MessageSquare, label: "Messaging" }
+    { href: "/manager/locks", icon: Key, label: "Locks" }
   ];
 
   return (
