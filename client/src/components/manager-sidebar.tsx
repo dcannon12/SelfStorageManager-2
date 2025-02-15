@@ -8,7 +8,8 @@ import {
   ClipboardList,
   DollarSign,
   BarChart3,
-  AlertCircle
+  AlertCircle,
+  Map
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -23,6 +24,7 @@ export function ManagerSidebar() {
     { href: "/manager/rentals", icon: ClipboardList, label: "Rentals" },
     { href: "/manager/payments", icon: DollarSign, label: "Payments" },
     { href: "/manager/collections", icon: AlertCircle, label: "Collections" },
+    { href: "/manager/site-map", icon: Map, label: "Site Map" },
     { href: "/manager/reports", icon: BarChart3, label: "Reports" },
     { href: "/manager/locks", icon: Key, label: "Locks" }
   ];

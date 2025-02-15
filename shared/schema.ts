@@ -85,3 +85,31 @@ export const unitSizeInfo = {
   large: { size: "10x15", price: 150, image: "https://images.unsplash.com/photo-1576669801820-a9ab287ac2d1" },
   "extra-large": { size: "10x20", price: 200, image: "https://images.unsplash.com/photo-1719937050988-dd510cf0e512" }
 };
+
+export const facilityLayouts = pgTable("facility_layouts", {
+  id: serial("id").primaryKey(),
+  facilityId: integer("facility_id").notNull(),
+  name: text("name").notNull(),
+  description: text("description"),
+  layout: jsonb("layout").notNull(),  // Will store the grid layout configuration
+  dimensions: jsonb("dimensions").notNull(), // Will store width and height of the layout
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// Add new schema and types for facility layouts
+export const insertFacilityLayoutSchema = createInsertSchema(facilityLayouts).omit({ 
+  id: true, 
+  createdAt: true,
+  updatedAt: true 
+});
+
+export type FacilityLayout = typeof facilityLayouts.$inferSelect;
+export type InsertFacilityLayout = z.infer<typeof insertFacilityLayoutSchema>;
+
+// Add to exports
+export type { 
+  Unit, Customer, Booking, Lead, PricingGroup, Payment, 
+  InsertUnit, InsertCustomer, InsertBooking, InsertLead, InsertPricingGroup, InsertPayment,
+  FacilityLayout, InsertFacilityLayout
+};
