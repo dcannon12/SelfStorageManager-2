@@ -11,10 +11,23 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { useFacility } from "@/lib/facility-context";
-import { formatDistanceToNow } from "date-fns";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useState } from "react";
+import { Search } from "lucide-react";
 
 export default function CollectionsPage() {
   const { selectedFacility } = useFacility();
+  const [search, setSearch] = useState("");
+  const [daysOverdueFilter, setDaysOverdueFilter] = useState<string>("all");
+  const [amountFilter, setAmountFilter] = useState<string>("all");
+
   const { data: payments } = useQuery<Payment[]>({
     queryKey: ["/api/payments"],
   });
@@ -36,14 +49,39 @@ export default function CollectionsPage() {
   const overdueCustomers = overduePayments.map(payment => {
     const booking = bookings?.find(b => b.id === payment.bookingId);
     const customer = customers?.find(c => booking?.customerId === c.id);
+    const daysOverdue = Math.floor(
+      (new Date().getTime() - new Date(payment.createdAt).getTime()) / 
+      (1000 * 60 * 60 * 24)
+    );
     return {
       payment,
       customer,
-      daysOverdue: Math.floor(
-        (new Date().getTime() - new Date(payment.createdAt).getTime()) / 
-        (1000 * 60 * 60 * 24)
-      ),
+      daysOverdue,
     };
+  });
+
+  // Apply filters
+  const filteredCustomers = overdueCustomers.filter(({ customer, payment, daysOverdue }) => {
+    // Search filter
+    const searchTerm = search.toLowerCase();
+    const matchesSearch = !search || 
+      customer?.name.toLowerCase().includes(searchTerm) ||
+      customer?.email.toLowerCase().includes(searchTerm) ||
+      customer?.phone.toLowerCase().includes(searchTerm);
+
+    // Days overdue filter
+    const matchesDaysOverdue = daysOverdueFilter === "all" ||
+      (daysOverdueFilter === "0-30" && daysOverdue <= 30) ||
+      (daysOverdueFilter === "31-60" && daysOverdue > 30 && daysOverdue <= 60) ||
+      (daysOverdueFilter === "60+" && daysOverdue > 60);
+
+    // Amount filter
+    const matchesAmount = amountFilter === "all" ||
+      (amountFilter === "0-500" && payment.amount <= 500) ||
+      (amountFilter === "501-1000" && payment.amount > 500 && payment.amount <= 1000) ||
+      (amountFilter === "1000+" && payment.amount > 1000);
+
+    return matchesSearch && matchesDaysOverdue && matchesAmount;
   }).sort((a, b) => b.daysOverdue - a.daysOverdue);
 
   return (
@@ -53,8 +91,45 @@ export default function CollectionsPage() {
           <div>
             <h1 className="text-3xl font-bold">Collections</h1>
             <p className="text-muted-foreground">
-              {overdueCustomers.length} tenants with outstanding balances
+              {filteredCustomers.length} tenants with outstanding balances
             </p>
+          </div>
+        </div>
+
+        {/* Filters */}
+        <div className="mb-6 space-y-4">
+          <div className="flex items-center space-x-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search by tenant name, email, or phone..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+            <Select value={daysOverdueFilter} onValueChange={setDaysOverdueFilter}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Days Overdue" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Days</SelectItem>
+                <SelectItem value="0-30">0-30 days</SelectItem>
+                <SelectItem value="31-60">31-60 days</SelectItem>
+                <SelectItem value="60+">60+ days</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={amountFilter} onValueChange={setAmountFilter}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Amount Range" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Amounts</SelectItem>
+                <SelectItem value="0-500">$0-$500</SelectItem>
+                <SelectItem value="501-1000">$501-$1000</SelectItem>
+                <SelectItem value="1000+">$1000+</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
@@ -70,7 +145,7 @@ export default function CollectionsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {overdueCustomers.map(({ payment, customer, daysOverdue }) => (
+              {filteredCustomers.map(({ payment, customer, daysOverdue }) => (
                 <TableRow key={payment.id}>
                   <TableCell>{customer?.name ?? "Unknown"}</TableCell>
                   <TableCell>
