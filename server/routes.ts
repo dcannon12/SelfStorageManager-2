@@ -1,10 +1,30 @@
 import type { Express } from "express";
 import { createServer } from "http";
 import { storage } from "./storage";
-import { insertUnitSchema, insertCustomerSchema, insertBookingSchema } from "@shared/schema";
+import { insertUnitSchema, insertCustomerSchema, insertBookingSchema, unitSizeInfo } from "@shared/schema";
 import { z } from "zod";
 
+async function seedUnits() {
+  const existingUnits = await storage.getUnits();
+  if (existingUnits.length === 0) {
+    // Create sample units
+    for (const [type, info] of Object.entries(unitSizeInfo)) {
+      const floorNumber = Math.floor(Math.random() * 3) + 1;
+      const blockLetter = String.fromCharCode(65 + Math.floor(Math.random() * 4));
+      await storage.createUnit({
+        type: type as any,
+        size: info.size,
+        price: info.price,
+        location: `Floor ${floorNumber}, Block ${blockLetter}`,
+      });
+    }
+  }
+}
+
 export async function registerRoutes(app: Express) {
+  // Seed units on startup
+  await seedUnits();
+
   app.get("/api/units", async (req, res) => {
     const units = await storage.getUnits();
     res.json(units);
@@ -44,7 +64,7 @@ export async function registerRoutes(app: Express) {
     if (!result.success) {
       return res.status(400).json({ message: "Invalid booking data" });
     }
-    
+
     const unit = await storage.getUnit(result.data.unitId);
     if (!unit) {
       return res.status(404).json({ message: "Unit not found" });
@@ -62,7 +82,7 @@ export async function registerRoutes(app: Express) {
     if (!result.success) {
       return res.status(400).json({ message: "Invalid status" });
     }
-    
+
     try {
       const booking = await storage.updateBookingStatus(Number(req.params.id), result.data.status);
       res.json(booking);
