@@ -14,6 +14,7 @@ import ManagerPayments from "@/pages/manager/payments";
 import ManagerReports from "@/pages/manager/reports";
 import ManagerLocks from "@/pages/manager/locks";
 import ManagerMessaging from "@/pages/manager/messaging";
+import ManagerCollections from "@/pages/manager/collections";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -30,6 +31,7 @@ function Router() {
       <Route path="/manager/pricing" component={ManagerPricing} />
       <Route path="/manager/rentals" component={ManagerRentals} />
       <Route path="/manager/payments" component={ManagerPayments} />
+      <Route path="/manager/collections" component={ManagerCollections} />
       <Route path="/manager/reports" component={ManagerReports} />
       <Route path="/manager/locks" component={ManagerLocks} />
       <Route path="/manager/messaging" component={ManagerMessaging} />
