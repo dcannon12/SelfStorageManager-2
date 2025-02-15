@@ -1,21 +1,35 @@
 import { Link, useLocation } from "wouter";
-import { LayoutDashboard, Users, BoxSelect, BarChart } from "lucide-react";
+import { 
+  LayoutDashboard, 
+  BoxSelect, 
+  UserPlus, 
+  Tags, 
+  Key,
+  ClipboardList,
+  DollarSign,
+  BarChart3
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function ManagerSidebar() {
   const [location] = useLocation();
 
   const links = [
-    { href: "/manager", icon: LayoutDashboard, label: "Dashboard" },
+    { href: "/manager", icon: LayoutDashboard, label: "Home" },
     { href: "/manager/units", icon: BoxSelect, label: "Units" },
-    { href: "/manager/tenants", icon: Users, label: "Tenants" },
-    { href: "/manager/analytics", icon: BarChart, label: "Analytics" }
+    { href: "/manager/leads", icon: UserPlus, label: "Leads" },
+    { href: "/manager/pricing", icon: Tags, label: "Pricing Groups" },
+    { href: "/manager/rentals", icon: ClipboardList, label: "Rentals" },
+    { href: "/manager/payments", icon: DollarSign, label: "Payments" },
+    { href: "/manager/reports", icon: BarChart3, label: "Reports" },
+    { href: "/manager/locks", icon: Key, label: "Locks" }
   ];
 
   return (
     <div className="h-screen w-64 bg-sidebar border-r border-border flex flex-col">
       <div className="p-6">
-        <h2 className="text-lg font-semibold">Facility Manager</h2>
+        <h2 className="text-lg font-semibold">Storage Manager</h2>
+        <p className="text-sm text-muted-foreground">Facility Management</p>
       </div>
       <nav className="flex-1">
         {links.map(({ href, icon: Icon, label }) => (

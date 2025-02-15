@@ -1,5 +1,6 @@
-import { type Unit, type Customer, type Booking, type InsertUnit, type InsertCustomer, type InsertBooking } from "@shared/schema";
-import { units, customers, bookings } from "@shared/schema";
+import { type Unit, type Customer, type Booking, type Lead, type PricingGroup, type Payment } from "@shared/schema";
+import { type InsertUnit, type InsertCustomer, type InsertBooking, type InsertLead, type InsertPricingGroup, type InsertPayment } from "@shared/schema";
+import { units, customers, bookings, leads, pricingGroups, payments } from "@shared/schema";
 import { db } from "./db";
 import { eq } from "drizzle-orm";
 
@@ -13,15 +14,34 @@ export interface IStorage {
   // Customers
   getCustomer(id: number): Promise<Customer | undefined>;
   createCustomer(customer: InsertCustomer): Promise<Customer>;
-  getCustomers(): Promise<Customer[]>; // Added getCustomers method
+  getCustomers(): Promise<Customer[]>;
 
   // Bookings
   getBookings(): Promise<Booking[]>;
   createBooking(booking: InsertBooking): Promise<Booking>;
-  updateBookingStatus(id: number, status: string): Promise<Booking>;
+  updateBookingStatus(id: number, status: "active" | "completed" | "cancelled"): Promise<Booking>;
+
+  // Leads
+  getLeads(): Promise<Lead[]>;
+  getLead(id: number): Promise<Lead | undefined>;
+  createLead(lead: InsertLead): Promise<Lead>;
+  updateLeadStatus(id: number, status: "new" | "contacted" | "qualified" | "converted" | "lost"): Promise<Lead>;
+
+  // Pricing Groups
+  getPricingGroups(): Promise<PricingGroup[]>;
+  getPricingGroup(id: number): Promise<PricingGroup | undefined>;
+  createPricingGroup(group: InsertPricingGroup): Promise<PricingGroup>;
+  updatePricingGroup(id: number, group: Partial<InsertPricingGroup>): Promise<PricingGroup>;
+
+  // Payments
+  getPayments(): Promise<Payment[]>;
+  getPayment(id: number): Promise<Payment | undefined>;
+  createPayment(payment: InsertPayment): Promise<Payment>;
+  updatePaymentStatus(id: number, status: "pending" | "completed" | "failed" | "refunded"): Promise<Payment>;
 }
 
 export class DatabaseStorage implements IStorage {
+  // Existing methods remain unchanged
   async getUnits(): Promise<Unit[]> {
     return await db.select().from(units);
   }
@@ -56,7 +76,7 @@ export class DatabaseStorage implements IStorage {
     return newCustomer;
   }
 
-  async getCustomers(): Promise<Customer[]> { // Added getCustomers implementation
+  async getCustomers(): Promise<Customer[]> {
     return await db.select().from(customers);
   }
 
@@ -70,7 +90,7 @@ export class DatabaseStorage implements IStorage {
     return newBooking;
   }
 
-  async updateBookingStatus(id: number, status: string): Promise<Booking> {
+  async updateBookingStatus(id: number, status: "active" | "completed" | "cancelled"): Promise<Booking> {
     const [updatedBooking] = await db
       .update(bookings)
       .set({ status })
@@ -82,6 +102,79 @@ export class DatabaseStorage implements IStorage {
       await this.updateUnitStatus(updatedBooking.unitId, false);
     }
     return updatedBooking;
+  }
+
+  // New methods for facility management
+  async getLeads(): Promise<Lead[]> {
+    return await db.select().from(leads);
+  }
+
+  async getLead(id: number): Promise<Lead | undefined> {
+    const [lead] = await db.select().from(leads).where(eq(leads.id, id));
+    return lead;
+  }
+
+  async createLead(lead: InsertLead): Promise<Lead> {
+    const [newLead] = await db.insert(leads).values(lead).returning();
+    return newLead;
+  }
+
+  async updateLeadStatus(id: number, status: "new" | "contacted" | "qualified" | "converted" | "lost"): Promise<Lead> {
+    const [updatedLead] = await db
+      .update(leads)
+      .set({ status })
+      .where(eq(leads.id, id))
+      .returning();
+    if (!updatedLead) throw new Error("Lead not found");
+    return updatedLead;
+  }
+
+  async getPricingGroups(): Promise<PricingGroup[]> {
+    return await db.select().from(pricingGroups);
+  }
+
+  async getPricingGroup(id: number): Promise<PricingGroup | undefined> {
+    const [group] = await db.select().from(pricingGroups).where(eq(pricingGroups.id, id));
+    return group;
+  }
+
+  async createPricingGroup(group: InsertPricingGroup): Promise<PricingGroup> {
+    const [newGroup] = await db.insert(pricingGroups).values(group).returning();
+    return newGroup;
+  }
+
+  async updatePricingGroup(id: number, group: Partial<InsertPricingGroup>): Promise<PricingGroup> {
+    const [updatedGroup] = await db
+      .update(pricingGroups)
+      .set(group)
+      .where(eq(pricingGroups.id, id))
+      .returning();
+    if (!updatedGroup) throw new Error("Pricing group not found");
+    return updatedGroup;
+  }
+
+  async getPayments(): Promise<Payment[]> {
+    return await db.select().from(payments);
+  }
+
+  async getPayment(id: number): Promise<Payment | undefined> {
+    const [payment] = await db.select().from(payments).where(eq(payments.id, id));
+    return payment;
+  }
+
+  async createPayment(payment: InsertPayment): Promise<Payment> {
+    const [newPayment] = await db.insert(payments).values(payment).returning();
+    return newPayment;
+  }
+
+  async updatePaymentStatus(id: number, status: "pending" | "completed" | "failed" | "refunded"): Promise<Payment> {
+    const [updatedPayment] = await db
+      .update(payments)
+      .set({ status })
+      .where(eq(payments.id, id))
+      .returning();
+    if (!updatedPayment) throw new Error("Payment not found");
+    return updatedPayment;
   }
 }
 

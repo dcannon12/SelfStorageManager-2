@@ -4,9 +4,14 @@ import { queryClient } from "./lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
 import Dashboard from "@/pages/dashboard";
 import Book from "@/pages/book";
-import ManagerDashboard from "@/pages/manager/dashboard";
-import UnitsPage from "@/pages/manager/units";
-import TenantsPage from "@/pages/manager/tenants";
+import ManagerHome from "@/pages/manager/home";
+import ManagerUnits from "@/pages/manager/units";
+import ManagerLeads from "@/pages/manager/leads";
+import ManagerPricing from "@/pages/manager/pricing";
+import ManagerRentals from "@/pages/manager/rentals";
+import ManagerPayments from "@/pages/manager/payments";
+import ManagerReports from "@/pages/manager/reports";
+import ManagerLocks from "@/pages/manager/locks";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -14,9 +19,15 @@ function Router() {
     <Switch>
       <Route path="/" component={Dashboard} />
       <Route path="/book/:id" component={Book} />
-      <Route path="/manager" component={ManagerDashboard} />
-      <Route path="/manager/units" component={UnitsPage} />
-      <Route path="/manager/tenants" component={TenantsPage} />
+      {/* Manager Routes */}
+      <Route path="/manager" component={ManagerHome} />
+      <Route path="/manager/units" component={ManagerUnits} />
+      <Route path="/manager/leads" component={ManagerLeads} />
+      <Route path="/manager/pricing" component={ManagerPricing} />
+      <Route path="/manager/rentals" component={ManagerRentals} />
+      <Route path="/manager/payments" component={ManagerPayments} />
+      <Route path="/manager/reports" component={ManagerReports} />
+      <Route path="/manager/locks" component={ManagerLocks} />
       <Route component={NotFound} />
     </Switch>
   );
