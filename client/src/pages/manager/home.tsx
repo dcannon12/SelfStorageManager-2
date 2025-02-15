@@ -140,8 +140,8 @@ export default function ManagerHome() {
               <CardTitle className="text-base font-medium">Revenue</CardTitle>
               <span className="text-2xl font-bold">${currentMonthRevenue.toLocaleString()}</span>
             </CardHeader>
-            <CardContent className="pt-4">
-              <div className="h-[240px] w-full">
+            <CardContent>
+              <div className="h-[240px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={revenueData} margin={{ top: 0, right: 0, bottom: 20, left: 0 }}>
                     <XAxis dataKey="month" />
@@ -164,8 +164,8 @@ export default function ManagerHome() {
               <CardTitle className="text-base font-medium">Occupancy</CardTitle>
               <span className="text-2xl font-bold">{currentOccupancyRate.toFixed(1)}%</span>
             </CardHeader>
-            <CardContent className="pt-4">
-              <div className="h-[240px] w-full">
+            <CardContent>
+              <div className="h-[240px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={occupancyData} margin={{ top: 0, right: 0, bottom: 20, left: 0 }}>
                     <XAxis dataKey="date" />
@@ -188,8 +188,8 @@ export default function ManagerHome() {
               <CardTitle className="text-base font-medium">Upcoming Payments</CardTitle>
               <span className="text-2xl font-bold">${totalUpcomingPayments.toLocaleString()}</span>
             </CardHeader>
-            <CardContent className="pt-4">
-              <div className="h-[240px] w-full flex items-center justify-center">
+            <CardContent>
+              <div className="h-[240px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
