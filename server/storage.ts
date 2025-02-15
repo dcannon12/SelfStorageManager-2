@@ -13,6 +13,7 @@ export interface IStorage {
   // Customers
   getCustomer(id: number): Promise<Customer | undefined>;
   createCustomer(customer: InsertCustomer): Promise<Customer>;
+  getCustomers(): Promise<Customer[]>; // Added getCustomers method
 
   // Bookings
   getBookings(): Promise<Booking[]>;
@@ -53,6 +54,10 @@ export class DatabaseStorage implements IStorage {
   async createCustomer(customer: InsertCustomer): Promise<Customer> {
     const [newCustomer] = await db.insert(customers).values(customer).returning();
     return newCustomer;
+  }
+
+  async getCustomers(): Promise<Customer[]> { // Added getCustomers implementation
+    return await db.select().from(customers);
   }
 
   async getBookings(): Promise<Booking[]> {

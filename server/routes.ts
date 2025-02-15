@@ -54,6 +54,11 @@ export async function registerRoutes(app: Express) {
     res.status(201).json(customer);
   });
 
+  app.get("/api/customers", async (req, res) => {
+    const customers = await storage.getCustomers();
+    res.json(customers);
+  });
+
   app.get("/api/bookings", async (req, res) => {
     const bookings = await storage.getBookings();
     res.json(bookings);
