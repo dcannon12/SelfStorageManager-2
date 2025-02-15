@@ -45,7 +45,6 @@ export function ManagerTopbar() {
         <DropdownMenu>
           <DropdownMenuTrigger className="flex items-center gap-2 hover:bg-accent px-2 py-1 rounded-md">
             <span className="text-sm">Facility 1</span>
-            <span className="text-sm text-muted-foreground">(D.8451)</span>
             <ChevronDown className="h-4 w-4 text-muted-foreground" />
           </DropdownMenuTrigger>
           <DropdownMenuContent>
