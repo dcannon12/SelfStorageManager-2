@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { PlusIcon, SearchIcon, FilterIcon, EditIcon, TrashIcon } from "lucide-react";
+import { SearchIcon, FilterIcon, EditIcon, TrashIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import {
@@ -20,9 +20,15 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { UnitDialog } from "@/components/dialogs/unit-dialog";
+import { useToast } from "@/hooks/use-toast";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 
 export default function UnitsPage() {
-  const { data: units } = useQuery<Unit[]>({
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const { data: units, isLoading } = useQuery<Unit[]>({
     queryKey: ["/api/units"],
   });
 
@@ -34,14 +40,40 @@ export default function UnitsPage() {
     unit.size.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const updateUnitStatus = useMutation({
+    mutationFn: ({ id, isOccupied }: { id: number; isOccupied: boolean }) =>
+      apiRequest(`/api/units/${id}/status`, {
+        method: "PATCH",
+        body: JSON.stringify({ isOccupied }),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/units"] });
+      toast({
+        title: "Success",
+        description: "Unit status updated successfully",
+      });
+    },
+  });
+
+  const deleteUnit = useMutation({
+    mutationFn: (id: number) =>
+      apiRequest(`/api/units/${id}`, {
+        method: "DELETE",
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/units"] });
+      toast({
+        title: "Success",
+        description: "Unit deleted successfully",
+      });
+    },
+  });
+
   return (
     <ManagerLayout>
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">Storage Units</h1>
-        <Button className="flex items-center gap-2">
-          <PlusIcon className="h-4 w-4" />
-          Add New Unit
-        </Button>
+        <UnitDialog />
       </div>
 
       <div className="flex gap-4 mb-6">
@@ -74,46 +106,76 @@ export default function UnitsPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredUnits?.map((unit) => (
-              <TableRow key={unit.id}>
-                <TableCell>{unit.id}</TableCell>
-                <TableCell className="capitalize">{unit.type}</TableCell>
-                <TableCell>{unit.size}</TableCell>
-                <TableCell>{unit.location}</TableCell>
-                <TableCell>${unit.price}/month</TableCell>
-                <TableCell>
-                  <Badge 
-                    variant={unit.isOccupied ? "destructive" : "secondary"}
-                    className="whitespace-nowrap"
-                  >
-                    {unit.isOccupied ? "Occupied" : "Available"}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon">
-                        <EditIcon className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem>
-                        Edit Details
-                      </DropdownMenuItem>
-                      <DropdownMenuItem>
-                        Change Status
-                      </DropdownMenuItem>
-                      <DropdownMenuItem>
-                        View History
-                      </DropdownMenuItem>
-                      <DropdownMenuItem className="text-red-600">
-                        Delete Unit
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+            {isLoading ? (
+              <TableRow>
+                <TableCell colSpan={7} className="text-center py-4">
+                  Loading...
                 </TableCell>
               </TableRow>
-            ))}
+            ) : filteredUnits?.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={7} className="text-center py-4">
+                  No units found
+                </TableCell>
+              </TableRow>
+            ) : (
+              filteredUnits?.map((unit) => (
+                <TableRow key={unit.id}>
+                  <TableCell>{unit.id}</TableCell>
+                  <TableCell className="capitalize">{unit.type}</TableCell>
+                  <TableCell>{unit.size}</TableCell>
+                  <TableCell>{unit.location}</TableCell>
+                  <TableCell>${unit.price}/month</TableCell>
+                  <TableCell>
+                    <Badge 
+                      variant={unit.isOccupied ? "destructive" : "secondary"}
+                      className="whitespace-nowrap cursor-pointer"
+                      onClick={() => 
+                        updateUnitStatus.mutate({
+                          id: unit.id,
+                          isOccupied: !unit.isOccupied,
+                        })
+                      }
+                    >
+                      {unit.isOccupied ? "Occupied" : "Available"}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                          <EditIcon className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => {}}>
+                          Edit Details
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() =>
+                            updateUnitStatus.mutate({
+                              id: unit.id,
+                              isOccupied: !unit.isOccupied,
+                            })
+                          }
+                        >
+                          Change Status
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => {}}>
+                          View History
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          className="text-red-600"
+                          onClick={() => deleteUnit.mutate(unit.id)}
+                        >
+                          Delete Unit
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </div>
