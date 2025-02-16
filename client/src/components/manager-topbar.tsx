@@ -1,4 +1,4 @@
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Bell, Settings } from "lucide-react";
 import {
   Drawer,
   DrawerContent,
@@ -48,7 +48,7 @@ export function ManagerTopbar() {
   ];
 
   return (
-    <div className="h-16 border-b border-border bg-background px-6 flex items-center">
+    <div className="h-16 border-b border-border bg-background px-6 flex items-center justify-between">
       <DropdownMenu>
         <DropdownMenuTrigger className="flex items-center gap-2 hover:bg-accent px-2 py-1 rounded-md">
           <span className="text-sm">{selectedFacility === 'all' ? 'All Facilities' : selectedFacility.name}</span>
@@ -70,6 +70,14 @@ export function ManagerTopbar() {
           ))}
         </DropdownMenuContent>
       </DropdownMenu>
+      <div className="flex items-center gap-4">
+        <button className="p-2 rounded-full hover:bg-accent">
+          <Bell className="h-5 w-5" />
+        </button>
+        <button className="p-2 rounded-full hover:bg-accent">
+          <Settings className="h-5 w-5" />
+        </button>
+      </div>
     </div>
   );
 }
