@@ -16,12 +16,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Pencil, Plus, Save } from "lucide-react";
-import { Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 type UnitStatus = "available" | "occupied" | "reserved" | "maintenance";
 
@@ -73,7 +67,6 @@ export default function SiteMapPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [selectedCell, setSelectedCell] = useState<number | null>(null);
   const [dimensions, setDimensions] = useState({ width: 10, height: 10 });
-  const [selectedLayout, setSelectedLayout] = useState<string>("");
 
   const { data: layouts } = useQuery<FacilityLayout[]>({
     queryKey: ["/api/facility-layouts", selectedFacility],
@@ -83,7 +76,16 @@ export default function SiteMapPage() {
     queryKey: ["/api/units"],
   });
 
-  const currentLayout = layouts?.[0]; // Default to first layout for now
+  const currentLayout = layouts?.[0]; // Default to first layout
+
+  // Calculate unit statistics
+  const stats = {
+    available: units?.filter(u => !u.isOccupied).length ?? 0,
+    occupied: units?.filter(u => u.isOccupied).length ?? 0,
+    overlocked: 0, // TODO: Add this status to the unit schema
+    unrentable: 0, // TODO: Add this status to the unit schema
+    overdue: 0     // TODO: Calculate from payment data
+  };
 
   const handleSave = () => {
     // TODO: Implement save functionality
@@ -100,18 +102,6 @@ export default function SiteMapPage() {
               View and manage facility layout
             </p>
           </div>
-          <Select value={selectedLayout} onValueChange={setSelectedLayout}>
-            <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="Select layout" />
-            </SelectTrigger>
-            <SelectContent>
-              {layouts?.map(layout => (
-                <SelectItem key={layout.id} value={layout.id.toString()}>
-                  {layout.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
           {isEditing ? (
             <div className="space-x-2">
               <Button variant="outline" onClick={() => setIsEditing(false)}>
@@ -128,6 +118,30 @@ export default function SiteMapPage() {
               Edit Layout
             </Button>
           )}
+        </div>
+
+        {/* Unit Statistics */}
+        <div className="grid grid-cols-5 gap-4 mb-6">
+          <Card className="p-4 text-center">
+            <div className="text-2xl font-bold text-green-600">{stats.available}</div>
+            <div className="text-sm text-muted-foreground">Available Units</div>
+          </Card>
+          <Card className="p-4 text-center">
+            <div className="text-2xl font-bold text-blue-600">{stats.occupied}</div>
+            <div className="text-sm text-muted-foreground">Occupied Units</div>
+          </Card>
+          <Card className="p-4 text-center">
+            <div className="text-2xl font-bold text-yellow-600">{stats.overlocked}</div>
+            <div className="text-sm text-muted-foreground">Overlocked Units</div>
+          </Card>
+          <Card className="p-4 text-center">
+            <div className="text-2xl font-bold text-gray-600">{stats.unrentable}</div>
+            <div className="text-sm text-muted-foreground">Unrentable Units</div>
+          </Card>
+          <Card className="p-4 text-center">
+            <div className="text-2xl font-bold text-red-600">{stats.overdue}</div>
+            <div className="text-sm text-muted-foreground">Overdue Units</div>
+          </Card>
         </div>
 
         <Card className="p-6">
