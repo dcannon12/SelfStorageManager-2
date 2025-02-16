@@ -3,7 +3,6 @@ import { useQuery } from "@tanstack/react-query";
 import { Customer, Payment, Booking } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import {
   CreditCard,
@@ -68,6 +67,7 @@ export default function TenantDetailsPage() {
             <Button
               key={button.label}
               variant="secondary"
+              size="sm"
               className="flex items-center gap-2"
             >
               <button.icon className="h-4 w-4" />
@@ -79,18 +79,12 @@ export default function TenantDetailsPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Customer Information */}
           <Card className="p-6">
-            <div className="flex items-start gap-4">
-              <Avatar className="h-24 w-24">
-                <div className="h-24 w-24 rounded-full bg-muted flex items-center justify-center">
-                  <UserCog className="h-12 w-12 text-muted-foreground" />
-                </div>
-              </Avatar>
+            <h2 className="text-xl font-semibold mb-4">Customer Information</h2>
+            <div className="space-y-4">
               <div>
-                <h2 className="text-xl font-semibold">{customer.name}</h2>
-                <p className="text-muted-foreground">Customer Information</p>
+                <div className="text-sm text-muted-foreground">Name</div>
+                <div>{customer.name}</div>
               </div>
-            </div>
-            <div className="mt-6 space-y-4">
               <div>
                 <div className="text-sm text-muted-foreground">Email</div>
                 <div>{customer.email}</div>
@@ -105,28 +99,35 @@ export default function TenantDetailsPage() {
                   {customer.address}
                 </div>
               </div>
+              <div>
+                <div className="text-sm text-muted-foreground">Cell Phone</div>
+                <div className="flex items-center gap-2">
+                  <span>{customer.phone}</span>
+                  <Button variant="outline" size="sm">Text Messaging</Button>
+                </div>
+              </div>
             </div>
           </Card>
 
           {/* Account & Access */}
           <Card className="p-6">
-            <h2 className="text-xl font-semibold mb-6">Account & Access</h2>
+            <h2 className="text-xl font-semibold mb-4">Account & Access</h2>
             <div className="space-y-4">
               <div>
-                <div className="text-sm text-muted-foreground">Login Status</div>
-                <Badge variant="success">Enabled</Badge>
+                <div className="text-sm text-muted-foreground">Login</div>
+                <div>{customer.accountStatus === 'enabled' ? 'Enabled' : 'Disabled'}</div>
               </div>
               <div>
                 <div className="text-sm text-muted-foreground">Username</div>
                 <div>{customer.email}</div>
               </div>
               <div>
-                <div className="text-sm text-muted-foreground">Security Question</div>
+                <div className="text-sm text-muted-foreground">Security question</div>
                 <div>Set</div>
               </div>
               <div>
-                <div className="text-sm text-muted-foreground">Security Answer</div>
-                <div>•••••</div>
+                <div className="text-sm text-muted-foreground">Security answer</div>
+                <div>BSF</div>
               </div>
               <div>
                 <div className="text-sm text-muted-foreground">Access Code</div>
@@ -137,29 +138,39 @@ export default function TenantDetailsPage() {
 
           {/* Balance Information */}
           <Card className="p-6">
-            <h2 className="text-xl font-semibold mb-6">Balance: ${balance}</h2>
+            <h2 className="text-xl font-semibold mb-4">Balance: ${balance.toFixed(2)}</h2>
             <div className="space-y-4">
               <div>
                 <div className="text-sm text-muted-foreground">Outstanding</div>
-                <div>${balance}</div>
+                <div className="text-red-600">${balance.toFixed(2)}</div>
               </div>
               <div>
                 <div className="text-sm text-muted-foreground">Credit</div>
-                <div>$0.00</div>
+                <div>$20.26</div>
               </div>
               <div>
                 <div className="text-sm text-muted-foreground">Recurring Billing</div>
-                <Badge variant="outline">Not Activated</Badge>
+                <Badge variant="outline">
+                  {customer.recurringBillingStatus === 'active' ? 'Active' : 'Not Activated'}
+                </Badge>
               </div>
               <div>
                 <div className="text-sm text-muted-foreground">Recurring Fees</div>
-                <div>$0.00</div>
+                <div>0</div>
               </div>
             </div>
           </Card>
         </div>
 
-        {/* Rentals Section could be added here */}
+        {/* Rentals Section */}
+        <div className="mt-8">
+          <Card className="p-6">
+            <h2 className="text-xl font-semibold mb-4">Rentals</h2>
+            <div className="text-sm text-muted-foreground">
+              No active rentals found.
+            </div>
+          </Card>
+        </div>
       </div>
     </ManagerLayout>
   );
