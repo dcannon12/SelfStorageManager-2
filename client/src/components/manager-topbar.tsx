@@ -1,5 +1,4 @@
-import { Bell, MessageSquare, Settings, Map, ChevronDown } from "lucide-react";
-import { Link } from "wouter";
+import { ChevronDown } from "lucide-react";
 import {
   Drawer,
   DrawerContent,
@@ -49,73 +48,28 @@ export function ManagerTopbar() {
   ];
 
   return (
-    <div className="h-16 border-b border-border bg-background px-6 flex items-center justify-between">
-      <div className="flex items-center gap-4">
-        <DropdownMenu>
-          <DropdownMenuTrigger className="flex items-center gap-2 hover:bg-accent px-2 py-1 rounded-md">
-            <span className="text-sm">{selectedFacility === 'all' ? 'All Facilities' : selectedFacility.name}</span>
-            <ChevronDown className="h-4 w-4 text-muted-foreground" />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            <DropdownMenuItem onClick={() => setSelectedFacility('all')} className="flex items-center gap-2">
-              <span>All Facilities</span>
+    <div className="h-16 border-b border-border bg-background px-6 flex items-center">
+      <DropdownMenu>
+        <DropdownMenuTrigger className="flex items-center gap-2 hover:bg-accent px-2 py-1 rounded-md">
+          <span className="text-sm">{selectedFacility === 'all' ? 'All Facilities' : selectedFacility.name}</span>
+          <ChevronDown className="h-4 w-4 text-muted-foreground" />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
+          <DropdownMenuItem onClick={() => setSelectedFacility('all')} className="flex items-center gap-2">
+            <span>All Facilities</span>
+          </DropdownMenuItem>
+          {facilities.map((facility) => (
+            <DropdownMenuItem 
+              key={facility.id} 
+              onClick={() => setSelectedFacility(facility)}
+              className="flex items-center gap-2"
+            >
+              <span>{facility.name}</span>
+              <span className="text-muted-foreground">({facility.code})</span>
             </DropdownMenuItem>
-            {facilities.map((facility) => (
-              <DropdownMenuItem 
-                key={facility.id} 
-                onClick={() => setSelectedFacility(facility)}
-                className="flex items-center gap-2"
-              >
-                <span>{facility.name}</span>
-                <span className="text-muted-foreground">({facility.code})</span>
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-        <Drawer>
-          <DrawerTrigger asChild>
-            <button className="p-2 rounded-full hover:bg-accent">
-              <Map className="h-5 w-5" />
-            </button>
-          </DrawerTrigger>
-          <DrawerContent>
-            <DrawerHeader>
-              <DrawerTitle>Site Map</DrawerTitle>
-            </DrawerHeader>
-            <div className="p-6 grid grid-cols-3 gap-6">
-              {siteMap.map((section) => (
-                <div key={section.heading}>
-                  <h3 className="font-semibold mb-2">{section.heading}</h3>
-                  <ul className="space-y-2">
-                    {section.items.map((item) => (
-                      <li key={item.path}>
-                        <Link href={item.path}>
-                          <a className="text-sm text-muted-foreground hover:text-foreground">
-                            {item.name}
-                          </a>
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-          </DrawerContent>
-        </Drawer>
-      </div>
-      <div className="flex items-center gap-4">
-        <Link href="/manager/messaging">
-          <a className="p-2 rounded-full hover:bg-accent">
-            <MessageSquare className="h-5 w-5" />
-          </a>
-        </Link>
-        <button className="p-2 rounded-full hover:bg-accent">
-          <Bell className="h-5 w-5" />
-        </button>
-        <button className="p-2 rounded-full hover:bg-accent">
-          <Settings className="h-5 w-5" />
-        </button>
-      </div>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   );
 }
