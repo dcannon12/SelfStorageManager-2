@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { ManagerLayout } from "@/components/manager-layout";
 import { useQuery } from "@tanstack/react-query";
-import { FacilityLayout, Unit } from "@shared/schema";
+import { FacilityLayout, Unit, Customer } from "@shared/schema";
 import { useFacility } from "@/lib/facility-context";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { UnitHoverCard } from "@/components/unit-hover-card";
 import {
   Drawer,
   DrawerContent,
@@ -21,13 +22,23 @@ type UnitStatus = "available" | "occupied" | "reserved" | "maintenance";
 
 interface GridCellProps {
   unit?: Unit;
+  tenant?: Customer;
   status?: UnitStatus;
   size?: string;
   isEditing?: boolean;
   onClick?: () => void;
+  ongoingSince?: string;
 }
 
-function GridCell({ unit, status = "available", size = "small", isEditing, onClick }: GridCellProps) {
+function GridCell({ 
+  unit, 
+  tenant,
+  status = "available", 
+  size = "small", 
+  isEditing, 
+  onClick,
+  ongoingSince 
+}: GridCellProps) {
   const statusColors = {
     available: "bg-green-100 border-green-200",
     occupied: "bg-red-100 border-red-200",
@@ -35,7 +46,7 @@ function GridCell({ unit, status = "available", size = "small", isEditing, onCli
     maintenance: "bg-gray-100 border-gray-200"
   };
 
-  return (
+  const content = (
     <div
       onClick={onClick}
       className={`
@@ -60,6 +71,13 @@ function GridCell({ unit, status = "available", size = "small", isEditing, onCli
       )}
     </div>
   );
+
+  // Only wrap with HoverCard if there's a tenant
+  return tenant ? (
+    <UnitHoverCard tenant={tenant} ongoingSince={ongoingSince}>
+      {content}
+    </UnitHoverCard>
+  ) : content;
 }
 
 export default function SiteMapPage() {
@@ -76,6 +94,14 @@ export default function SiteMapPage() {
     queryKey: ["/api/units"],
   });
 
+  const { data: customers } = useQuery<Customer[]>({
+    queryKey: ["/api/customers"],
+  });
+
+  const { data: bookings } = useQuery<any[]>({
+    queryKey: ["/api/bookings"],
+  });
+
   const currentLayout = layouts?.[0]; // Default to first layout
 
   // Calculate unit statistics
@@ -90,6 +116,20 @@ export default function SiteMapPage() {
   const handleSave = () => {
     // TODO: Implement save functionality
     setIsEditing(false);
+  };
+
+  // Helper function to get tenant details for a unit
+  const getTenantDetails = (unitId: number) => {
+    const booking = bookings?.find(b => b.unitId === unitId && b.status === "active");
+    if (!booking) return null;
+
+    const tenant = customers?.find(c => c.id === booking.customerId);
+    if (!tenant) return null;
+
+    return {
+      tenant,
+      ongoingSince: booking.startDate
+    };
   };
 
   return (
@@ -181,13 +221,16 @@ export default function SiteMapPage() {
               }}
             >
               {Array.from({ length: dimensions.width * dimensions.height }).map((_, index) => {
-                const existingCell = currentLayout?.layout[index];
-                const unit = existingCell ? units?.find(u => u.id === existingCell.unitId) : undefined;
+                const cell = currentLayout?.layout?.[index];
+                const unit = cell?.unitId ? units?.find(u => u.id === cell.unitId) : undefined;
+                const tenantInfo = unit ? getTenantDetails(unit.id) : null;
 
                 return (
                   <GridCell
                     key={index}
                     unit={unit}
+                    tenant={tenantInfo?.tenant}
+                    ongoingSince={tenantInfo?.ongoingSince}
                     status={unit?.isOccupied ? "occupied" : "available"}
                     isEditing={isEditing}
                     onClick={() => isEditing && setSelectedCell(index)}
