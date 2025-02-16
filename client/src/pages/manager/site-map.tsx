@@ -30,14 +30,14 @@ interface GridCellProps {
   ongoingSince?: string;
 }
 
-function GridCell({ 
-  unit, 
+function GridCell({
+  unit,
   tenant,
-  status = "available", 
-  size = "small", 
-  isEditing, 
+  status = "available",
+  size = "small",
+  isEditing,
   onClick,
-  ongoingSince 
+  ongoingSince
 }: GridCellProps) {
   const statusColors = {
     available: "bg-green-100 border-green-200",
@@ -92,29 +92,40 @@ export default function SiteMapPage() {
 
   const { data: units } = useQuery<Unit[]>({
     queryKey: ["/api/units"],
+    onSuccess: (data) => {
+      console.log("Units data:", data);
+    }
   });
 
   const { data: customers } = useQuery<Customer[]>({
     queryKey: ["/api/customers"],
+    onSuccess: (data) => {
+      console.log("Customers data:", data);
+    }
   });
 
   const { data: bookings } = useQuery<any[]>({
     queryKey: ["/api/bookings"],
+    onSuccess: (data) => {
+      console.log("Bookings data:", data);
+    }
   });
 
   const currentLayout = layouts?.[0]; // Default to first layout
+  console.log("Current layout:", currentLayout);
 
   // Calculate unit statistics
   const stats = {
     available: units?.filter(u => !u.isOccupied).length ?? 0,
     occupied: units?.filter(u => u.isOccupied).length ?? 0,
-    overlocked: 0, // TODO: Add this status to the unit schema
-    unrentable: 0, // TODO: Add this status to the unit schema
-    overdue: 0     // TODO: Calculate from payment data
+    overlocked: 0,
+    unrentable: 0,
+    overdue: 0
   };
 
+  console.log("Unit statistics:", stats);
+
   const handleSave = () => {
-    // TODO: Implement save functionality
     setIsEditing(false);
   };
 
@@ -125,6 +136,8 @@ export default function SiteMapPage() {
 
     const tenant = customers?.find(c => c.id === booking.customerId);
     if (!tenant) return null;
+
+    console.log(`Tenant details for unit ${unitId}:`, { booking, tenant });
 
     return {
       tenant,
@@ -213,8 +226,8 @@ export default function SiteMapPage() {
           )}
 
           <div className="aspect-video bg-accent/10 rounded-lg p-4">
-            <div 
-              className="grid gap-2" 
+            <div
+              className="grid gap-2"
               style={{
                 gridTemplateColumns: `repeat(${dimensions.width}, minmax(0, 1fr))`,
                 gridTemplateRows: `repeat(${dimensions.height}, minmax(0, 1fr))`,
