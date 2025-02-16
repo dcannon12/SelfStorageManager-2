@@ -1,6 +1,7 @@
 import { ManagerLayout } from "@/components/manager-layout";
 import { useQuery } from "@tanstack/react-query";
 import { Payment, Customer, Booking } from "@shared/schema";
+import { Link } from "wouter";
 import {
   Table,
   TableBody,
@@ -41,17 +42,16 @@ export default function CollectionsPage() {
   });
 
   // Get overdue payments and their associated customers
-  const overduePayments = payments?.filter(payment => 
-    payment.status === "pending" && 
-    new Date(payment.createdAt) < new Date()
+  const overduePayments = payments?.filter(payment =>
+    payment.status === "pending" && new Date(payment.createdAt) < new Date()
   ) ?? [];
 
   const overdueCustomers = overduePayments.map(payment => {
     const booking = bookings?.find(b => b.id === payment.bookingId);
     const customer = customers?.find(c => booking?.customerId === c.id);
     const daysOverdue = Math.floor(
-      (new Date().getTime() - new Date(payment.createdAt).getTime()) / 
-      (1000 * 60 * 60 * 24)
+      (new Date().getTime() - new Date(payment.createdAt).getTime()) /
+        (1000 * 60 * 60 * 24)
     );
     return {
       payment,
@@ -64,7 +64,7 @@ export default function CollectionsPage() {
   const filteredCustomers = overdueCustomers.filter(({ customer, payment, daysOverdue }) => {
     // Search filter
     const searchTerm = search.toLowerCase();
-    const matchesSearch = !search || 
+    const matchesSearch = !search ||
       customer?.name.toLowerCase().includes(searchTerm) ||
       customer?.email.toLowerCase().includes(searchTerm) ||
       customer?.phone.toLowerCase().includes(searchTerm);
@@ -146,28 +146,30 @@ export default function CollectionsPage() {
             </TableHeader>
             <TableBody>
               {filteredCustomers.map(({ payment, customer, daysOverdue }) => (
-                <TableRow key={payment.id}>
-                  <TableCell>{customer?.name ?? "Unknown"}</TableCell>
-                  <TableCell>
-                    <div className="space-y-1">
-                      <div>{customer?.email}</div>
-                      <div className="text-sm text-muted-foreground">
-                        {customer?.phone}
+                <Link key={payment.id} href={`/manager/tenant/${customer?.id}`}>
+                  <TableRow className="cursor-pointer hover:bg-muted/50">
+                    <TableCell>{customer?.name ?? "Unknown"}</TableCell>
+                    <TableCell>
+                      <div className="space-y-1">
+                        <div>{customer?.email}</div>
+                        <div className="text-sm text-muted-foreground">
+                          {customer?.phone}
+                        </div>
                       </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>${payment.amount}</TableCell>
-                  <TableCell>
-                    <Badge variant={daysOverdue > 30 ? "destructive" : "secondary"}>
-                      {daysOverdue} days
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline">
-                      Needs Contact
-                    </Badge>
-                  </TableCell>
-                </TableRow>
+                    </TableCell>
+                    <TableCell>${payment.amount}</TableCell>
+                    <TableCell>
+                      <Badge variant={daysOverdue > 30 ? "destructive" : "secondary"}>
+                        {daysOverdue} days
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline">
+                        Needs Contact
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                </Link>
               ))}
             </TableBody>
           </Table>

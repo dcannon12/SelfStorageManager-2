@@ -19,6 +19,11 @@ export const customers = pgTable("customers", {
   name: text("name").notNull(),
   email: text("email").notNull(),
   phone: text("phone").notNull(),
+  address: text("address"),
+  accessCode: text("access_code"),
+  accountStatus: text("account_status", { enum: ["enabled", "disabled"] }).notNull().default("enabled"),
+  recurringBillingStatus: text("recurring_billing_status", { enum: ["active", "not_activated"] }).notNull().default("not_activated"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
 export const leads = pgTable("leads", {
