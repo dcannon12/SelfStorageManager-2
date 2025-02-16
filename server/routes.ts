@@ -8,7 +8,9 @@ import {
   insertLeadSchema,
   insertPricingGroupSchema,
   insertPaymentSchema,
-  unitSizeInfo 
+  unitSizeInfo,
+  insertNotificationTemplateSchema,
+  insertNotificationLogSchema
 } from "@shared/schema";
 import { z } from "zod";
 
@@ -219,6 +221,77 @@ export async function registerRoutes(app: Express) {
     } catch (error) {
       res.status(404).json({ message: "Payment not found" });
     }
+  });
+
+  // Notification Templates
+  app.get("/api/notification-templates", async (req, res) => {
+    const templates = await storage.getNotificationTemplates();
+    res.json(templates);
+  });
+
+  app.get("/api/notification-templates/:id", async (req, res) => {
+    const template = await storage.getNotificationTemplate(Number(req.params.id));
+    if (!template) return res.status(404).json({ message: "Template not found" });
+    res.json(template);
+  });
+
+  app.post("/api/notification-templates", async (req, res) => {
+    const result = insertNotificationTemplateSchema.safeParse(req.body);
+    if (!result.success) {
+      return res.status(400).json({ message: "Invalid template data" });
+    }
+    const template = await storage.createNotificationTemplate(result.data);
+    res.status(201).json(template);
+  });
+
+  app.patch("/api/notification-templates/:id", async (req, res) => {
+    const result = insertNotificationTemplateSchema.partial().safeParse(req.body);
+    if (!result.success) {
+      return res.status(400).json({ message: "Invalid template data" });
+    }
+
+    try {
+      const template = await storage.updateNotificationTemplate(Number(req.params.id), result.data);
+      res.json(template);
+    } catch (error) {
+      res.status(404).json({ message: "Template not found" });
+    }
+  });
+
+  app.patch("/api/notification-templates/:id/toggle", async (req, res) => {
+    const result = z.object({ 
+      isActive: z.boolean()
+    }).safeParse(req.body);
+
+    if (!result.success) {
+      return res.status(400).json({ message: "Invalid status" });
+    }
+
+    try {
+      const template = await storage.toggleNotificationTemplate(
+        Number(req.params.id),
+        result.data.isActive
+      );
+      res.json(template);
+    } catch (error) {
+      res.status(404).json({ message: "Template not found" });
+    }
+  });
+
+  // Notification Logs
+  app.get("/api/notification-logs", async (req, res) => {
+    const customerId = req.query.customerId ? Number(req.query.customerId) : undefined;
+    const logs = await storage.getNotificationLogs(customerId);
+    res.json(logs);
+  });
+
+  app.post("/api/notification-logs", async (req, res) => {
+    const result = insertNotificationLogSchema.safeParse(req.body);
+    if (!result.success) {
+      return res.status(400).json({ message: "Invalid log data" });
+    }
+    const log = await storage.createNotificationLog(result.data);
+    res.status(201).json(log);
   });
 
   const httpServer = createServer(app);

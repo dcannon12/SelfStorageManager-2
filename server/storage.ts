@@ -3,6 +3,11 @@ import { type InsertUnit, type InsertCustomer, type InsertBooking, type InsertLe
 import { units, customers, bookings, leads, pricingGroups, payments } from "@shared/schema";
 import { db } from "./db";
 import { eq } from "drizzle-orm";
+import { 
+  type NotificationTemplate, type NotificationLog,
+  type InsertNotificationTemplate, type InsertNotificationLog,
+  notificationTemplates, notificationLogs
+} from "@shared/schema";
 
 export interface IStorage {
   // Units
@@ -38,10 +43,21 @@ export interface IStorage {
   getPayment(id: number): Promise<Payment | undefined>;
   createPayment(payment: InsertPayment): Promise<Payment>;
   updatePaymentStatus(id: number, status: "pending" | "completed" | "failed" | "refunded"): Promise<Payment>;
+
+  // Notification Templates
+  getNotificationTemplates(): Promise<NotificationTemplate[]>;
+  getNotificationTemplate(id: number): Promise<NotificationTemplate | undefined>;
+  createNotificationTemplate(template: InsertNotificationTemplate): Promise<NotificationTemplate>;
+  updateNotificationTemplate(id: number, template: Partial<InsertNotificationTemplate>): Promise<NotificationTemplate>;
+  toggleNotificationTemplate(id: number, isActive: boolean): Promise<NotificationTemplate>;
+
+  // Notification Logs
+  getNotificationLogs(customerId?: number): Promise<NotificationLog[]>;
+  createNotificationLog(log: InsertNotificationLog): Promise<NotificationLog>;
+  updateNotificationLogStatus(id: number, status: "sent" | "failed", errorMessage?: string): Promise<NotificationLog>;
 }
 
 export class DatabaseStorage implements IStorage {
-  // Existing methods remain unchanged
   async getUnits(): Promise<Unit[]> {
     return await db.select().from(units);
   }
@@ -104,7 +120,6 @@ export class DatabaseStorage implements IStorage {
     return updatedBooking;
   }
 
-  // New methods for facility management
   async getLeads(): Promise<Lead[]> {
     return await db.select().from(leads);
   }
@@ -175,6 +190,85 @@ export class DatabaseStorage implements IStorage {
       .returning();
     if (!updatedPayment) throw new Error("Payment not found");
     return updatedPayment;
+  }
+
+  // Notification Templates
+  async getNotificationTemplates(): Promise<NotificationTemplate[]> {
+    return await db.select().from(notificationTemplates);
+  }
+
+  async getNotificationTemplate(id: number): Promise<NotificationTemplate | undefined> {
+    const [template] = await db
+      .select()
+      .from(notificationTemplates)
+      .where(eq(notificationTemplates.id, id));
+    return template;
+  }
+
+  async createNotificationTemplate(template: InsertNotificationTemplate): Promise<NotificationTemplate> {
+    const [newTemplate] = await db
+      .insert(notificationTemplates)
+      .values(template)
+      .returning();
+    return newTemplate;
+  }
+
+  async updateNotificationTemplate(
+    id: number,
+    template: Partial<InsertNotificationTemplate>
+  ): Promise<NotificationTemplate> {
+    const [updatedTemplate] = await db
+      .update(notificationTemplates)
+      .set({ ...template, updatedAt: new Date() })
+      .where(eq(notificationTemplates.id, id))
+      .returning();
+    if (!updatedTemplate) throw new Error("Template not found");
+    return updatedTemplate;
+  }
+
+  async toggleNotificationTemplate(id: number, isActive: boolean): Promise<NotificationTemplate> {
+    const [updatedTemplate] = await db
+      .update(notificationTemplates)
+      .set({ isActive, updatedAt: new Date() })
+      .where(eq(notificationTemplates.id, id))
+      .returning();
+    if (!updatedTemplate) throw new Error("Template not found");
+    return updatedTemplate;
+  }
+
+  // Notification Logs
+  async getNotificationLogs(customerId?: number): Promise<NotificationLog[]> {
+    let query = db.select().from(notificationLogs);
+    if (customerId) {
+      query = query.where(eq(notificationLogs.customerId, customerId));
+    }
+    return await query;
+  }
+
+  async createNotificationLog(log: InsertNotificationLog): Promise<NotificationLog> {
+    const [newLog] = await db
+      .insert(notificationLogs)
+      .values(log)
+      .returning();
+    return newLog;
+  }
+
+  async updateNotificationLogStatus(
+    id: number,
+    status: "sent" | "failed",
+    errorMessage?: string
+  ): Promise<NotificationLog> {
+    const [updatedLog] = await db
+      .update(notificationLogs)
+      .set({ 
+        status, 
+        errorMessage,
+        sentAt: status === "sent" ? new Date() : null 
+      })
+      .where(eq(notificationLogs.id, id))
+      .returning();
+    if (!updatedLog) throw new Error("Log not found");
+    return updatedLog;
   }
 }
 

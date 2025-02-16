@@ -10,7 +10,8 @@ import {
   BarChart3,
   AlertCircle,
   Map,
-  MessageSquare
+  MessageSquare,
+  Bell
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -28,7 +29,8 @@ export function ManagerSidebar() {
     { href: "/manager/site-map", icon: Map, label: "Site Map" },
     { href: "/manager/reports", icon: BarChart3, label: "Reports" },
     { href: "/manager/locks", icon: Key, label: "Locks" },
-    { href: "/manager/messaging", icon: MessageSquare, label: "Messages" }
+    { href: "/manager/messaging", icon: MessageSquare, label: "Messages" },
+    { href: "/manager/notifications", icon: Bell, label: "Notifications" }
   ];
 
   return (

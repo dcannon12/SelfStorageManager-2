@@ -112,9 +112,59 @@ export const insertFacilityLayoutSchema = createInsertSchema(facilityLayouts).om
 export type FacilityLayout = typeof facilityLayouts.$inferSelect;
 export type InsertFacilityLayout = z.infer<typeof insertFacilityLayoutSchema>;
 
-// Add to exports
+export const notificationTemplates = pgTable("notification_templates", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  type: text("type", { enum: ["email", "sms"] }).notNull(),
+  subject: text("subject"),
+  content: text("content").notNull(),
+  trigger: text("trigger", { 
+    enum: ["payment_late", "payment_due", "lien_warning", "lien_filed", "custom"] 
+  }).notNull(),
+  // For custom triggers
+  triggerConditions: jsonb("trigger_conditions"),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const notificationLogs = pgTable("notification_logs", {
+  id: serial("id").primaryKey(),
+  templateId: integer("template_id").notNull(),
+  customerId: integer("customer_id").notNull(),
+  status: text("status", { 
+    enum: ["queued", "sent", "failed"] 
+  }).notNull(),
+  sentAt: timestamp("sent_at"),
+  errorMessage: text("error_message"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+// Add new schemas
+export const insertNotificationTemplateSchema = createInsertSchema(notificationTemplates).omit({ 
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  isActive: true
+});
+
+export const insertNotificationLogSchema = createInsertSchema(notificationLogs).omit({ 
+  id: true,
+  createdAt: true,
+  sentAt: true
+});
+
+// Add new types
+export type NotificationTemplate = typeof notificationTemplates.$inferSelect;
+export type NotificationLog = typeof notificationLogs.$inferSelect;
+export type InsertNotificationTemplate = z.infer<typeof insertNotificationTemplateSchema>;
+export type InsertNotificationLog = z.infer<typeof insertNotificationLogSchema>;
+
+// Update exports
 export type { 
   Unit, Customer, Booking, Lead, PricingGroup, Payment, 
   InsertUnit, InsertCustomer, InsertBooking, InsertLead, InsertPricingGroup, InsertPayment,
-  FacilityLayout, InsertFacilityLayout
+  FacilityLayout, InsertFacilityLayout,
+  NotificationTemplate, NotificationLog,
+  InsertNotificationTemplate, InsertNotificationLog
 };
