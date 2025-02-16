@@ -6,12 +6,12 @@ import { useFacility } from "@/lib/facility-context";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { UnitHoverCard } from "@/components/unit-hover-card";
+import { useLocation } from "wouter";
 import {
   Drawer,
   DrawerContent,
   DrawerHeader,
   DrawerTitle,
-  DrawerTrigger,
   DrawerFooter,
 } from "@/components/ui/drawer";
 import { Input } from "@/components/ui/input";
@@ -39,6 +39,8 @@ function GridCell({
   onClick,
   ongoingSince
 }: GridCellProps) {
+  const [, setLocation] = useLocation();
+
   const statusColors = {
     available: "bg-green-100 border-green-200",
     occupied: "bg-red-100 border-red-200",
@@ -46,13 +48,22 @@ function GridCell({
     maintenance: "bg-gray-100 border-gray-200"
   };
 
+  const handleClick = () => {
+    if (isEditing) {
+      onClick?.();
+    } else if (tenant) {
+      setLocation(`/manager/tenant/${tenant.id}`);
+    }
+  };
+
   const content = (
     <div
-      onClick={onClick}
+      onClick={handleClick}
       className={`
         p-2 border-2 rounded-md cursor-pointer transition-all
         ${isEditing ? 'hover:border-primary' : statusColors[status]}
         ${size === "large" ? "col-span-2 row-span-2" : ""}
+        ${!isEditing && tenant ? 'hover:scale-105' : ''}
       `}
     >
       {unit && (
