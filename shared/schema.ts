@@ -23,6 +23,9 @@ export const customers = pgTable("customers", {
   accessCode: text("access_code"),
   accountStatus: text("account_status", { enum: ["enabled", "disabled"] }).notNull().default("enabled"),
   recurringBillingStatus: text("recurring_billing_status", { enum: ["active", "not_activated"] }).notNull().default("not_activated"),
+  autopayEnabled: boolean("autopay_enabled").notNull().default(false),
+  autopayMethod: jsonb("autopay_method"),
+  autopayDay: integer("autopay_day"), // Day of month for autopay
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
@@ -160,11 +163,76 @@ export type NotificationLog = typeof notificationLogs.$inferSelect;
 export type InsertNotificationTemplate = z.infer<typeof insertNotificationTemplateSchema>;
 export type InsertNotificationLog = z.infer<typeof insertNotificationLogSchema>;
 
+
+export const customerDocuments = pgTable("customer_documents", {
+  id: serial("id").primaryKey(),
+  customerId: integer("customer_id").notNull(),
+  name: text("name").notNull(),
+  type: text("type", { 
+    enum: ["lease_agreement", "insurance_policy", "id_proof", "other"] 
+  }).notNull(),
+  fileUrl: text("file_url").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const customerInsurance = pgTable("customer_insurance", {
+  id: serial("id").primaryKey(),
+  customerId: integer("customer_id").notNull(),
+  provider: text("provider").notNull(),
+  policyNumber: text("policy_number").notNull(),
+  coverageAmount: integer("coverage_amount").notNull(),
+  startDate: timestamp("start_date").notNull(),
+  endDate: timestamp("end_date").notNull(),
+  status: text("status", { 
+    enum: ["active", "expired", "cancelled"] 
+  }).notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const digitalSignatures = pgTable("digital_signatures", {
+  id: serial("id").primaryKey(),
+  customerId: integer("customer_id").notNull(),
+  documentId: integer("document_id").notNull(),
+  signatureData: text("signature_data").notNull(),
+  ipAddress: text("ip_address").notNull(),
+  signedAt: timestamp("signed_at").notNull().defaultNow(),
+});
+
+// Add new schemas
+export const insertCustomerDocumentSchema = createInsertSchema(customerDocuments).omit({ 
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+export const insertCustomerInsuranceSchema = createInsertSchema(customerInsurance).omit({ 
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+export const insertDigitalSignatureSchema = createInsertSchema(digitalSignatures).omit({ 
+  id: true,
+  signedAt: true
+});
+
+// Add new types
+export type CustomerDocument = typeof customerDocuments.$inferSelect;
+export type CustomerInsurance = typeof customerInsurance.$inferSelect;
+export type DigitalSignature = typeof digitalSignatures.$inferSelect;
+export type InsertCustomerDocument = z.infer<typeof insertCustomerDocumentSchema>;
+export type InsertCustomerInsurance = z.infer<typeof insertCustomerInsuranceSchema>;
+export type InsertDigitalSignature = z.infer<typeof insertDigitalSignatureSchema>;
+
 // Update exports
 export type { 
   Unit, Customer, Booking, Lead, PricingGroup, Payment, 
   InsertUnit, InsertCustomer, InsertBooking, InsertLead, InsertPricingGroup, InsertPayment,
   FacilityLayout, InsertFacilityLayout,
   NotificationTemplate, NotificationLog,
-  InsertNotificationTemplate, InsertNotificationLog
+  InsertNotificationTemplate, InsertNotificationLog,
+  CustomerDocument, CustomerInsurance, DigitalSignature,
+  InsertCustomerDocument, InsertCustomerInsurance, InsertDigitalSignature
 };

@@ -6,7 +6,10 @@ import { eq } from "drizzle-orm";
 import { 
   type NotificationTemplate, type NotificationLog,
   type InsertNotificationTemplate, type InsertNotificationLog,
-  notificationTemplates, notificationLogs
+  notificationTemplates, notificationLogs,
+  type CustomerDocument, type CustomerInsurance, type DigitalSignature,
+  type InsertCustomerDocument, type InsertCustomerInsurance, type InsertDigitalSignature,
+  customerDocuments, customerInsurance, digitalSignatures
 } from "@shared/schema";
 
 export interface IStorage {
@@ -20,6 +23,12 @@ export interface IStorage {
   getCustomer(id: number): Promise<Customer | undefined>;
   createCustomer(customer: InsertCustomer): Promise<Customer>;
   getCustomers(): Promise<Customer[]>;
+  updateCustomerAutopay(
+    customerId: number, 
+    enabled: boolean, 
+    method?: Record<string, any>,
+    day?: number
+  ): Promise<Customer>;
 
   // Bookings
   getBookings(): Promise<Booking[]>;
@@ -55,6 +64,19 @@ export interface IStorage {
   getNotificationLogs(customerId?: number): Promise<NotificationLog[]>;
   createNotificationLog(log: InsertNotificationLog): Promise<NotificationLog>;
   updateNotificationLogStatus(id: number, status: "sent" | "failed", errorMessage?: string): Promise<NotificationLog>;
+
+  // Customer Portal Methods
+  getCustomerDocuments(customerId: number): Promise<CustomerDocument[]>;
+  createCustomerDocument(document: InsertCustomerDocument): Promise<CustomerDocument>;
+  updateCustomerDocument(id: number, document: Partial<InsertCustomerDocument>): Promise<CustomerDocument>;
+  deleteCustomerDocument(id: number): Promise<void>;
+
+  getCustomerInsurance(customerId: number): Promise<CustomerInsurance[]>;
+  createCustomerInsurance(insurance: InsertCustomerInsurance): Promise<CustomerInsurance>;
+  updateCustomerInsurance(id: number, insurance: Partial<InsertCustomerInsurance>): Promise<CustomerInsurance>;
+
+  createDigitalSignature(signature: InsertDigitalSignature): Promise<DigitalSignature>;
+  getDocumentSignatures(documentId: number): Promise<DigitalSignature[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -269,6 +291,104 @@ export class DatabaseStorage implements IStorage {
       .returning();
     if (!updatedLog) throw new Error("Log not found");
     return updatedLog;
+  }
+
+  // Customer Portal Methods
+  async getCustomerDocuments(customerId: number): Promise<CustomerDocument[]> {
+    return await db
+      .select()
+      .from(customerDocuments)
+      .where(eq(customerDocuments.customerId, customerId));
+  }
+
+  async createCustomerDocument(document: InsertCustomerDocument): Promise<CustomerDocument> {
+    const [newDocument] = await db
+      .insert(customerDocuments)
+      .values(document)
+      .returning();
+    return newDocument;
+  }
+
+  async updateCustomerDocument(
+    id: number,
+    document: Partial<InsertCustomerDocument>
+  ): Promise<CustomerDocument> {
+    const [updatedDocument] = await db
+      .update(customerDocuments)
+      .set({ ...document, updatedAt: new Date() })
+      .where(eq(customerDocuments.id, id))
+      .returning();
+    if (!updatedDocument) throw new Error("Document not found");
+    return updatedDocument;
+  }
+
+  async deleteCustomerDocument(id: number): Promise<void> {
+    await db
+      .delete(customerDocuments)
+      .where(eq(customerDocuments.id, id));
+  }
+
+  async getCustomerInsurance(customerId: number): Promise<CustomerInsurance[]> {
+    return await db
+      .select()
+      .from(customerInsurance)
+      .where(eq(customerInsurance.customerId, customerId));
+  }
+
+  async createCustomerInsurance(insurance: InsertCustomerInsurance): Promise<CustomerInsurance> {
+    const [newInsurance] = await db
+      .insert(customerInsurance)
+      .values(insurance)
+      .returning();
+    return newInsurance;
+  }
+
+  async updateCustomerInsurance(
+    id: number,
+    insurance: Partial<InsertCustomerInsurance>
+  ): Promise<CustomerInsurance> {
+    const [updatedInsurance] = await db
+      .update(customerInsurance)
+      .set({ ...insurance, updatedAt: new Date() })
+      .where(eq(customerInsurance.id, id))
+      .returning();
+    if (!updatedInsurance) throw new Error("Insurance not found");
+    return updatedInsurance;
+  }
+
+  async createDigitalSignature(signature: InsertDigitalSignature): Promise<DigitalSignature> {
+    const [newSignature] = await db
+      .insert(digitalSignatures)
+      .values(signature)
+      .returning();
+    return newSignature;
+  }
+
+  async getDocumentSignatures(documentId: number): Promise<DigitalSignature[]> {
+    return await db
+      .select()
+      .from(digitalSignatures)
+      .where(eq(digitalSignatures.documentId, documentId));
+  }
+
+  async updateCustomerAutopay(
+    customerId: number,
+    enabled: boolean,
+    method?: Record<string, any>,
+    day?: number
+  ): Promise<Customer> {
+    const [updatedCustomer] = await db
+      .update(customers)
+      .set({ 
+        autopayEnabled: enabled,
+        autopayMethod: method ? method : null,
+        autopayDay: day ?? null,
+        recurringBillingStatus: enabled ? "active" : "not_activated"
+      })
+      .where(eq(customers.id, customerId))
+      .returning();
+    if (!updatedCustomer) throw new Error("Customer not found");
+    return updatedCustomer;
   }
 }
 
