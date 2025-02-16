@@ -3,16 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { Unit, Booking, Payment, Customer } from "@shared/schema";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, LineChart, Line, PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
-import { Command, CommandInput, CommandEmpty, CommandGroup, CommandItem } from "@/components/ui/command";
-import { useLocation } from "wouter";
-import { Search, User } from "lucide-react";
-import { useState } from "react";
 
 export default function ManagerHome() {
-  const [, setLocation] = useLocation();
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-
   const { data: units } = useQuery<Unit[]>({
     queryKey: ["/api/units"],
   });
@@ -25,16 +17,6 @@ export default function ManagerHome() {
     queryKey: ["/api/payments"],
   });
 
-  const { data: customers } = useQuery<Customer[]>({
-    queryKey: ["/api/customers"],
-  });
-
-  // Filter customers based on search query
-  const filteredCustomers = customers?.filter(customer =>
-    customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    customer.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    customer.phone.toLowerCase().includes(searchQuery.toLowerCase())
-  ) ?? [];
 
   // Calculate stats
   const stats = {
@@ -146,41 +128,6 @@ export default function ManagerHome() {
           <div>
             <h1 className="text-3xl font-bold">Dashboard</h1>
             <p className="text-muted-foreground">Facility (D.8451)</p>
-          </div>
-          <div className="w-96">
-            <Command className="rounded-lg border shadow-md">
-              <CommandInput
-                placeholder="Search tenants..."
-                value={searchQuery}
-                onValueChange={setSearchQuery}
-              />
-              {searchQuery && (
-                <>
-                  <CommandEmpty>No tenants found.</CommandEmpty>
-                  <CommandGroup heading="Tenants">
-                    {filteredCustomers.map((customer) => (
-                      <CommandItem
-                        key={customer.id}
-                        value={customer.name}
-                        onSelect={() => {
-                          setLocation(`/manager/tenant/${customer.id}`);
-                          setSearchQuery("");
-                        }}
-                        className="flex items-center gap-2 cursor-pointer"
-                      >
-                        <User className="h-4 w-4" />
-                        <div>
-                          <div>{customer.name}</div>
-                          <div className="text-sm text-muted-foreground">
-                            {customer.email}
-                          </div>
-                        </div>
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                </>
-              )}
-            </Command>
           </div>
         </div>
 
