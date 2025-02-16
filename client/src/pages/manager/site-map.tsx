@@ -72,7 +72,6 @@ function GridCell({
     </div>
   );
 
-  // Only wrap with HoverCard if there's a tenant
   return tenant ? (
     <UnitHoverCard tenant={tenant} ongoingSince={ongoingSince}>
       {content}
@@ -92,27 +91,17 @@ export default function SiteMapPage() {
 
   const { data: units } = useQuery<Unit[]>({
     queryKey: ["/api/units"],
-    onSuccess: (data) => {
-      console.log("Units data:", data);
-    }
   });
 
   const { data: customers } = useQuery<Customer[]>({
     queryKey: ["/api/customers"],
-    onSuccess: (data) => {
-      console.log("Customers data:", data);
-    }
   });
 
   const { data: bookings } = useQuery<any[]>({
     queryKey: ["/api/bookings"],
-    onSuccess: (data) => {
-      console.log("Bookings data:", data);
-    }
   });
 
-  const currentLayout = layouts?.[0]; // Default to first layout
-  console.log("Current layout:", currentLayout);
+  const currentLayout = layouts?.[0];
 
   // Calculate unit statistics
   const stats = {
@@ -122,8 +111,6 @@ export default function SiteMapPage() {
     unrentable: 0,
     overdue: 0
   };
-
-  console.log("Unit statistics:", stats);
 
   const handleSave = () => {
     setIsEditing(false);
@@ -136,8 +123,6 @@ export default function SiteMapPage() {
 
     const tenant = customers?.find(c => c.id === booking.customerId);
     if (!tenant) return null;
-
-    console.log(`Tenant details for unit ${unitId}:`, { booking, tenant });
 
     return {
       tenant,
@@ -233,10 +218,8 @@ export default function SiteMapPage() {
                 gridTemplateRows: `repeat(${dimensions.height}, minmax(0, 1fr))`,
               }}
             >
-              {Array.from({ length: dimensions.width * dimensions.height }).map((_, index) => {
-                const cell = currentLayout?.layout?.[index];
-                const unit = cell?.unitId ? units?.find(u => u.id === cell.unitId) : undefined;
-                const tenantInfo = unit ? getTenantDetails(unit.id) : null;
+              {units?.map((unit, index) => {
+                const tenantInfo = getTenantDetails(unit.id);
 
                 return (
                   <GridCell
@@ -244,7 +227,7 @@ export default function SiteMapPage() {
                     unit={unit}
                     tenant={tenantInfo?.tenant}
                     ongoingSince={tenantInfo?.ongoingSince}
-                    status={unit?.isOccupied ? "occupied" : "available"}
+                    status={unit.isOccupied ? "occupied" : "available"}
                     isEditing={isEditing}
                     onClick={() => isEditing && setSelectedCell(index)}
                   />
@@ -261,7 +244,6 @@ export default function SiteMapPage() {
                 <DrawerTitle>Edit Unit</DrawerTitle>
               </DrawerHeader>
               <div className="p-4 space-y-4">
-                {/* TODO: Add unit editing form */}
                 <p className="text-sm text-muted-foreground">
                   Unit editing coming soon...
                 </p>
