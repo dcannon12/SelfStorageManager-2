@@ -1,10 +1,18 @@
 import { ManagerLayout } from "@/components/manager-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
-import { Unit, Booking, Payment } from "@shared/schema";
+import { Unit, Booking, Payment, Customer } from "@shared/schema";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, LineChart, Line, PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
+import { Command, CommandInput, CommandEmpty, CommandGroup, CommandItem } from "@/components/ui/command";
+import { useLocation } from "wouter";
+import { Search, User } from "lucide-react";
+import { useState } from "react";
 
 export default function ManagerHome() {
+  const [, setLocation] = useLocation();
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
   const { data: units } = useQuery<Unit[]>({
     queryKey: ["/api/units"],
   });
@@ -16,6 +24,17 @@ export default function ManagerHome() {
   const { data: payments } = useQuery<Payment[]>({
     queryKey: ["/api/payments"],
   });
+
+  const { data: customers } = useQuery<Customer[]>({
+    queryKey: ["/api/customers"],
+  });
+
+  // Filter customers based on search query
+  const filteredCustomers = customers?.filter(customer =>
+    customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    customer.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    customer.phone.toLowerCase().includes(searchQuery.toLowerCase())
+  ) ?? [];
 
   // Calculate stats
   const stats = {
@@ -64,10 +83,10 @@ export default function ManagerHome() {
   const lastMonthRevenue = revenueData[1].revenue;
   const twoMonthsAgoRevenue = revenueData[0].revenue;
 
-  const monthOverMonthChange = lastMonthRevenue ? 
+  const monthOverMonthChange = lastMonthRevenue ?
     ((currentMonthRevenue - lastMonthRevenue) / lastMonthRevenue) * 100 : 0;
 
-  const previousMonthChange = twoMonthsAgoRevenue ? 
+  const previousMonthChange = twoMonthsAgoRevenue ?
     ((lastMonthRevenue - twoMonthsAgoRevenue) / twoMonthsAgoRevenue) * 100 : 0;
 
   // Calculate occupancy rate over time
@@ -128,9 +147,41 @@ export default function ManagerHome() {
             <h1 className="text-3xl font-bold">Dashboard</h1>
             <p className="text-muted-foreground">Facility (D.8451)</p>
           </div>
-          <button className="px-4 py-2 bg-blue-500 text-white rounded">
-            Edit Dashboard
-          </button>
+          <div className="w-96">
+            <Command className="rounded-lg border shadow-md">
+              <CommandInput
+                placeholder="Search tenants..."
+                value={searchQuery}
+                onValueChange={setSearchQuery}
+              />
+              {searchQuery && (
+                <>
+                  <CommandEmpty>No tenants found.</CommandEmpty>
+                  <CommandGroup heading="Tenants">
+                    {filteredCustomers.map((customer) => (
+                      <CommandItem
+                        key={customer.id}
+                        value={customer.name}
+                        onSelect={() => {
+                          setLocation(`/manager/tenant/${customer.id}`);
+                          setSearchQuery("");
+                        }}
+                        className="flex items-center gap-2 cursor-pointer"
+                      >
+                        <User className="h-4 w-4" />
+                        <div>
+                          <div>{customer.name}</div>
+                          <div className="text-sm text-muted-foreground">
+                            {customer.email}
+                          </div>
+                        </div>
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </>
+              )}
+            </Command>
+          </div>
         </div>
 
         <div className="grid gap-8 grid-cols-1 lg:grid-cols-3">
