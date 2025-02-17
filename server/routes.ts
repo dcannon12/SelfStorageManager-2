@@ -71,6 +71,12 @@ export async function registerRoutes(app: Express) {
     res.json(customers);
   });
 
+  app.get("/api/customers/:id", async (req, res) => {
+    const customer = await storage.getCustomer(Number(req.params.id));
+    if (!customer) return res.status(404).json({ message: "Customer not found" });
+    res.json(customer);
+  });
+
   // Bookings
   app.get("/api/bookings", async (req, res) => {
     const bookings = await storage.getBookings();
