@@ -51,13 +51,13 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
-// Create schema with proper string handling
+// Remove strict validation requirements
 const updateCustomerSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  email: z.string().email("Invalid email address"),
-  phone: z.string().min(1, "Phone number is required"),
-  address: z.string().or(z.literal('')),
-  accessCode: z.string().or(z.literal('')),
+  name: z.string(),
+  email: z.string(),
+  phone: z.string(),
+  address: z.string().optional(),
+  accessCode: z.string().optional(),
 });
 
 type UpdateCustomerInput = z.infer<typeof updateCustomerSchema>;
