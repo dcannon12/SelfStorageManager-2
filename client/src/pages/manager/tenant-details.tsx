@@ -281,7 +281,7 @@ export default function TenantDetailsPage() {
                 <h2 className="text-lg font-semibold">Current Rentals</h2>
               </div>
               <div className="divide-y">
-                {bookings?.map((booking) => (
+                {bookings?.filter(booking => booking.customerId === parseInt(id!)).map((booking) => (
                   <div key={booking.id} className="p-4">
                     <div className="grid grid-cols-3 gap-6">
                       {/* Unit Details */}
