@@ -11,7 +11,8 @@ import {
   AlertCircle,
   Map,
   MessageSquare,
-  Bell
+  Bell,
+  GitFork
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -29,6 +30,7 @@ export function ManagerSidebar() {
     { href: "/manager/site-map", icon: Map, label: "Site Map" },
     { href: "/manager/reports", icon: BarChart3, label: "Reports" },
     { href: "/manager/locks", icon: Key, label: "Locks" },
+    { href: "/manager/gate", icon: GitFork, label: "Gate" },
     { href: "/manager/messaging", icon: MessageSquare, label: "Messages" },
     { href: "/manager/notifications", icon: Bell, label: "Notifications" }
   ];
