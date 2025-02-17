@@ -33,7 +33,8 @@ import {
   CalendarDays,
   FileText,
   GitFork,
-  Pencil
+  Pencil,
+  Link as LinkIcon
 } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -186,6 +187,54 @@ export default function TenantDetailsPage() {
 
           {/* Main Content */}
           <div className="md:col-span-2 space-y-4">
+            {/* Current Rentals */}
+            <div className="bg-white rounded-lg border">
+              <div className="p-4 border-b">
+                <h2 className="text-lg font-semibold">Current Rentals</h2>
+              </div>
+              <div className="divide-y">
+                {bookings?.map((booking) => (
+                  <div key={booking.id} className="p-4">
+                    <div className="grid grid-cols-3 gap-6">
+                      {/* Unit Details */}
+                      <div>
+                        <h3 className="text-sm font-medium text-muted-foreground mb-2">Unit Details</h3>
+                        <div className="space-y-1">
+                          <div className="font-semibold">Unit {booking.unitId}</div>
+                          <div className="text-sm">Size: 10x20</div>
+                          <div className="text-sm">Status: Rented</div>
+                          <Button variant="link" size="sm" className="h-auto p-0">
+                            <LinkIcon className="h-3 w-3 mr-1" />
+                            View Agreement
+                          </Button>
+                        </div>
+                      </div>
+
+                      {/* Billing */}
+                      <div>
+                        <h3 className="text-sm font-medium text-muted-foreground mb-2">Billing</h3>
+                        <div className="space-y-1">
+                          <div className="text-sm">Monthly Rate: ${booking.monthlyRate}</div>
+                          <div className="text-sm">Next Bill: {format(new Date(booking.nextBillDate), 'MM/dd/yyyy')}</div>
+                          <div className="text-sm">Insurance: ${booking.insuranceAmount || '0.00'}</div>
+                        </div>
+                      </div>
+
+                      {/* Move Out */}
+                      <div>
+                        <h3 className="text-sm font-medium text-muted-foreground mb-2">Move Out</h3>
+                        <div className="space-y-2">
+                          <Button variant="secondary" size="sm" className="w-full">
+                            Schedule Move Out
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
             {/* Payment History */}
             <div className="bg-white rounded-lg border">
               <div className="p-4 border-b">
