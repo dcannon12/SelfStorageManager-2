@@ -50,6 +50,7 @@ import { queryClient } from "@/lib/queryClient";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { TenantMessageDialog } from "@/components/dialogs/tenant-message-dialog";
 
 // Remove strict validation requirements
 const updateCustomerSchema = z.object({
@@ -66,6 +67,7 @@ export default function TenantDetailsPage() {
   const { id } = useParams();
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
+  const [isMessageDialogOpen, setIsMessageDialogOpen] = useState(false);
 
   const form = useForm<UpdateCustomerInput>({
     resolver: zodResolver(updateCustomerSchema),
@@ -180,6 +182,10 @@ export default function TenantDetailsPage() {
     );
   }
 
+  if (!customer) {
+    return null;
+  }
+
   return (
     <ManagerLayout>
       <div className="max-w-7xl mx-auto">
@@ -219,7 +225,11 @@ export default function TenantDetailsPage() {
                 <Pencil className="h-4 w-4 mr-2" />
                 Edit Details
               </Button>
-              <Button variant="outline" size="sm">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsMessageDialogOpen(true)}
+              >
                 <MessageSquare className="h-4 w-4 mr-2" />
                 Message
               </Button>
@@ -474,6 +484,12 @@ export default function TenantDetailsPage() {
             </Form>
           </DialogContent>
         </Dialog>
+        {/* Add the TenantMessageDialog */}
+        <TenantMessageDialog
+          tenant={customer}
+          open={isMessageDialogOpen}
+          onOpenChange={setIsMessageDialogOpen}
+        />
       </div>
     </ManagerLayout>
   );
