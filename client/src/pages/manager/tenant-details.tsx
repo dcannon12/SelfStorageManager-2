@@ -44,15 +44,22 @@ import {
   Pencil,
   Link as LinkIcon
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
-// Create an update schema that makes all fields optional
-const updateCustomerSchema = insertCustomerSchema.partial();
+// Create a more lenient update schema
+const updateCustomerSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  email: z.string().email("Invalid email address"),
+  phone: z.string().min(1, "Phone number is required"),
+  address: z.string().nullable(),
+  accessCode: z.string().nullable(),
+});
+
 type UpdateCustomerInput = z.infer<typeof updateCustomerSchema>;
 
 export default function TenantDetailsPage() {
@@ -62,7 +69,13 @@ export default function TenantDetailsPage() {
 
   const form = useForm<UpdateCustomerInput>({
     resolver: zodResolver(updateCustomerSchema),
-    defaultValues: {},
+    defaultValues: {
+      name: "",
+      email: "",
+      phone: "",
+      address: null,
+      accessCode: null,
+    },
   });
 
   const { data: customer } = useQuery<Customer>({
@@ -77,17 +90,33 @@ export default function TenantDetailsPage() {
     queryKey: ["/api/bookings", { customerId: id }],
   });
 
+  // Update form when customer data is loaded
+  useEffect(() => {
+    if (customer) {
+      form.reset({
+        name: customer.name,
+        email: customer.email,
+        phone: customer.phone,
+        address: customer.address,
+        accessCode: customer.accessCode,
+      });
+    }
+  }, [customer, form]);
+
   const updateCustomerMutation = useMutation({
     mutationFn: async (data: UpdateCustomerInput) => {
+      console.log("Updating customer with data:", data);
       const response = await fetch(`/api/customers/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
+
       if (!response.ok) {
         const error = await response.text();
         throw new Error(error || 'Failed to update customer');
       }
+
       return response.json();
     },
     onSuccess: () => {
@@ -99,6 +128,7 @@ export default function TenantDetailsPage() {
       setIsEditing(false);
     },
     onError: (error: Error) => {
+      console.error("Update failed:", error);
       toast({
         title: "Error",
         description: error.message,
@@ -108,17 +138,8 @@ export default function TenantDetailsPage() {
   });
 
   const onSubmit = (data: UpdateCustomerInput) => {
-    // Only send fields that were actually changed
-    const changedFields = Object.fromEntries(
-      Object.entries(data).filter(([key, value]) =>
-        value !== customer?.[key as keyof Customer]
-      )
-    );
-    if (Object.keys(changedFields).length === 0) {
-      setIsEditing(false);
-      return;
-    }
-    updateCustomerMutation.mutate(changedFields);
+    console.log("Form submitted with data:", data);
+    updateCustomerMutation.mutate(data);
   };
 
   // Helper function to safely format dates
@@ -158,7 +179,15 @@ export default function TenantDetailsPage() {
                 variant="outline"
                 size="sm"
                 onClick={() => {
-                  form.reset(customer);
+                  if (customer) {
+                    form.reset({
+                      name: customer.name,
+                      email: customer.email,
+                      phone: customer.phone,
+                      address: customer.address,
+                      accessCode: customer.accessCode,
+                    });
+                  }
                   setIsEditing(true);
                 }}
               >
@@ -344,7 +373,7 @@ export default function TenantDetailsPage() {
                     <FormItem>
                       <FormLabel>Name</FormLabel>
                       <FormControl>
-                        <Input {...field} />
+                        <Input {...field} value={field.value || ''} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -357,7 +386,7 @@ export default function TenantDetailsPage() {
                     <FormItem>
                       <FormLabel>Email</FormLabel>
                       <FormControl>
-                        <Input type="email" {...field} />
+                        <Input type="email" {...field} value={field.value || ''} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -370,7 +399,7 @@ export default function TenantDetailsPage() {
                     <FormItem>
                       <FormLabel>Phone</FormLabel>
                       <FormControl>
-                        <Input type="tel" {...field} />
+                        <Input type="tel" {...field} value={field.value || ''} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -383,7 +412,7 @@ export default function TenantDetailsPage() {
                     <FormItem>
                       <FormLabel>Address</FormLabel>
                       <FormControl>
-                        <Input {...field} />
+                        <Input {...field} value={field.value || ''} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -396,7 +425,7 @@ export default function TenantDetailsPage() {
                     <FormItem>
                       <FormLabel>Gate Access Code</FormLabel>
                       <FormControl>
-                        <Input {...field} />
+                        <Input {...field} value={field.value || ''} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
