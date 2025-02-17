@@ -51,13 +51,13 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
-// Create a more lenient update schema with proper string handling
+// Create schema with proper string handling
 const updateCustomerSchema = z.object({
   name: z.string().min(1, "Name is required"),
   email: z.string().email("Invalid email address"),
   phone: z.string().min(1, "Phone number is required"),
-  address: z.string().optional().or(z.literal('')),
-  accessCode: z.string().optional().or(z.literal('')),
+  address: z.string().or(z.literal('')),
+  accessCode: z.string().or(z.literal('')),
 });
 
 type UpdateCustomerInput = z.infer<typeof updateCustomerSchema>;
@@ -105,7 +105,6 @@ export default function TenantDetailsPage() {
 
   const updateCustomerMutation = useMutation({
     mutationFn: async (data: UpdateCustomerInput) => {
-      console.log("Updating customer with data:", data);
       const response = await fetch(`/api/customers/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -142,7 +141,6 @@ export default function TenantDetailsPage() {
   });
 
   const onSubmit = (data: UpdateCustomerInput) => {
-    console.log("Form submitted with data:", data);
     updateCustomerMutation.mutate(data);
   };
 
@@ -212,6 +210,152 @@ export default function TenantDetailsPage() {
                 <DollarSign className="h-4 w-4 mr-2" />
                 Make Payment
               </Button>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-4 grid gap-4 md:grid-cols-3">
+          {/* Contact Information */}
+          <div className="md:col-span-1 space-y-4">
+            <div className="bg-white p-4 rounded-lg border">
+              <h2 className="text-lg font-semibold mb-4">Contact Information</h2>
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <Mail className="h-4 w-4 text-muted-foreground" />
+                  <div className="text-sm">{customer.email}</div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Phone className="h-4 w-4 text-muted-foreground" />
+                  <div className="text-sm">{customer.phone}</div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Home className="h-4 w-4 text-muted-foreground" />
+                  <div className="text-sm">{customer.address || 'Not provided'}</div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <GitFork className="h-4 w-4 text-muted-foreground" />
+                  <div className="text-sm">Gate Code: {customer.accessCode || 'Not set'}</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Balance Summary */}
+            <div className="bg-white p-4 rounded-lg border">
+              <h2 className="text-lg font-semibold mb-4">Balance Summary</h2>
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Outstanding</span>
+                  <span className="font-medium text-red-600">${balance.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Last Payment</span>
+                  <span className="text-sm">
+                    {payments?.[0] ? formatDate(payments[0].createdAt) : 'N/A'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Main Content */}
+          <div className="md:col-span-2 space-y-4">
+            {/* Current Rentals */}
+            <div className="bg-white rounded-lg border">
+              <div className="p-4 border-b">
+                <h2 className="text-lg font-semibold">Current Rentals</h2>
+              </div>
+              <div className="divide-y">
+                {bookings?.map((booking) => (
+                  <div key={booking.id} className="p-4">
+                    <div className="grid grid-cols-3 gap-6">
+                      {/* Unit Details */}
+                      <div>
+                        <h3 className="text-sm font-medium text-muted-foreground mb-2">Unit Details</h3>
+                        <div className="space-y-1">
+                          <div className="font-semibold">Unit {booking.unitId}</div>
+                          <div className="text-sm">Size: 10x20</div>
+                          <div className="text-sm">Status: Rented</div>
+                          <Button variant="link" size="sm" className="h-auto p-0">
+                            <LinkIcon className="h-3 w-3 mr-1" />
+                            View Agreement
+                          </Button>
+                        </div>
+                      </div>
+
+                      {/* Billing */}
+                      <div>
+                        <h3 className="text-sm font-medium text-muted-foreground mb-2">Billing</h3>
+                        <div className="space-y-1">
+                          <div className="text-sm">Monthly Rate: ${booking.monthlyRate}</div>
+                          <div className="text-sm">Next Bill: {formatDate(booking.nextBillDate)}</div>
+                          <div className="text-sm">Insurance: ${booking.insuranceAmount || '0.00'}</div>
+                        </div>
+                      </div>
+
+                      {/* Move Out */}
+                      <div>
+                        <h3 className="text-sm font-medium text-muted-foreground mb-2">Move Out</h3>
+                        <div className="space-y-2">
+                          <Button variant="secondary" size="sm" className="w-full">
+                            Schedule Move Out
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Payment History */}
+            <div className="bg-white rounded-lg border">
+              <div className="p-4 border-b">
+                <h2 className="text-lg font-semibold">Payment History</h2>
+              </div>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Description</TableHead>
+                    <TableHead>Amount</TableHead>
+                    <TableHead>Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {payments?.map((payment) => (
+                    <TableRow key={payment.id}>
+                      <TableCell>{formatDate(payment.createdAt)}</TableCell>
+                      <TableCell>Monthly Rent Payment</TableCell>
+                      <TableCell>${payment.amount}</TableCell>
+                      <TableCell>
+                        <Badge variant={payment.status === 'completed' ? 'default' : 'secondary'}>
+                          {payment.status}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+
+            {/* Notes */}
+            <div className="bg-white p-4 rounded-lg border">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-lg font-semibold">Notes</h2>
+                <Button variant="outline" size="sm">Add Note</Button>
+              </div>
+              <Textarea
+                placeholder="Add a note about this tenant..."
+                className="min-h-[100px] mb-4"
+              />
+              <div className="space-y-3">
+                <div className="border-l-4 border-primary p-3 bg-muted/50 rounded">
+                  <div className="text-sm text-muted-foreground mb-1">
+                    Added by John Doe on {formatDate(new Date().toISOString())}
+                  </div>
+                  <p className="text-sm">Called about gate access code reset. Issue resolved.</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
