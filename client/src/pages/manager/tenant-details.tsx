@@ -1,11 +1,19 @@
 import { ManagerLayout } from "@/components/manager-layout";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Customer, Payment, Booking } from "@shared/schema";
+import { Customer, Payment, Booking, insertCustomerSchema } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useParams } from "wouter";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import {
   Table,
   TableBody,
@@ -39,12 +47,23 @@ import {
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+
+// Create an update schema that makes all fields optional
+const updateCustomerSchema = insertCustomerSchema.partial();
+type UpdateCustomerInput = z.infer<typeof updateCustomerSchema>;
 
 export default function TenantDetailsPage() {
   const { id } = useParams();
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
-  const [editForm, setEditForm] = useState<Partial<Customer>>({});
+
+  const form = useForm<UpdateCustomerInput>({
+    resolver: zodResolver(updateCustomerSchema),
+    defaultValues: {},
+  });
 
   const { data: customer } = useQuery<Customer>({
     queryKey: ["/api/customers", id],
@@ -59,7 +78,7 @@ export default function TenantDetailsPage() {
   });
 
   const updateCustomerMutation = useMutation({
-    mutationFn: async (data: Partial<Customer>) => {
+    mutationFn: async (data: UpdateCustomerInput) => {
       const response = await fetch(`/api/customers/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -88,11 +107,10 @@ export default function TenantDetailsPage() {
     },
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Only send the fields that were actually changed
+  const onSubmit = (data: UpdateCustomerInput) => {
+    // Only send fields that were actually changed
     const changedFields = Object.fromEntries(
-      Object.entries(editForm).filter(([key, value]) => 
+      Object.entries(data).filter(([key, value]) =>
         value !== customer?.[key as keyof Customer]
       )
     );
@@ -140,7 +158,7 @@ export default function TenantDetailsPage() {
                 variant="outline"
                 size="sm"
                 onClick={() => {
-                  setEditForm(customer);
+                  form.reset(customer);
                   setIsEditing(true);
                 }}
               >
@@ -302,7 +320,7 @@ export default function TenantDetailsPage() {
               <div className="space-y-3">
                 <div className="border-l-4 border-primary p-3 bg-muted/50 rounded">
                   <div className="text-sm text-muted-foreground mb-1">
-                    Added by John Doe on {formatDate(new Date())}
+                    Added by John Doe on {formatDate(new Date().toISOString())}
                   </div>
                   <p className="text-sm">Called about gate access code reset. Issue resolved.</p>
                 </div>
@@ -317,60 +335,90 @@ export default function TenantDetailsPage() {
             <DialogHeader>
               <DialogTitle>Edit Customer Details</DialogTitle>
             </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="text-sm font-medium">Name</label>
-                <Input
-                  value={editForm.name || ''}
-                  onChange={(e) => setEditForm(prev => ({ ...prev, name: e.target.value }))}
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Name</FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
-              <div>
-                <label className="text-sm font-medium">Email</label>
-                <Input
-                  type="email"
-                  value={editForm.email || ''}
-                  onChange={(e) => setEditForm(prev => ({ ...prev, email: e.target.value }))}
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input type="email" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
-              <div>
-                <label className="text-sm font-medium">Phone</label>
-                <Input
-                  type="tel"
-                  value={editForm.phone || ''}
-                  onChange={(e) => setEditForm(prev => ({ ...prev, phone: e.target.value }))}
+                <FormField
+                  control={form.control}
+                  name="phone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Phone</FormLabel>
+                      <FormControl>
+                        <Input type="tel" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
-              <div>
-                <label className="text-sm font-medium">Address</label>
-                <Input
-                  value={editForm.address || ''}
-                  onChange={(e) => setEditForm(prev => ({ ...prev, address: e.target.value }))}
+                <FormField
+                  control={form.control}
+                  name="address"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Address</FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
-              <div>
-                <label className="text-sm font-medium">Gate Access Code</label>
-                <Input
-                  value={editForm.accessCode || ''}
-                  onChange={(e) => setEditForm(prev => ({ ...prev, accessCode: e.target.value }))}
+                <FormField
+                  control={form.control}
+                  name="accessCode"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Gate Access Code</FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
-              <DialogFooter>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsEditing(false)}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={updateCustomerMutation.isPending}
-                >
-                  {updateCustomerMutation.isPending ? 'Saving...' : 'Save Changes'}
-                </Button>
-              </DialogFooter>
-            </form>
+                <DialogFooter>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsEditing(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={updateCustomerMutation.isPending}
+                  >
+                    {updateCustomerMutation.isPending ? 'Saving...' : 'Save Changes'}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </Form>
           </DialogContent>
         </Dialog>
       </div>
