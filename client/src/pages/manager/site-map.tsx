@@ -14,11 +14,25 @@ import {
   DrawerTitle,
   DrawerFooter,
 } from "@/components/ui/drawer";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Pencil, Plus, Save } from "lucide-react";
+import { Pencil, Plus, Save, Palette } from "lucide-react";
 
 type UnitStatus = "available" | "occupied" | "reserved" | "maintenance";
+
+interface StatusColors {
+  available: string;
+  occupied: string;
+  reserved: string;
+  maintenance: string;
+}
 
 interface GridCellProps {
   unit?: Unit;
@@ -28,6 +42,7 @@ interface GridCellProps {
   isEditing?: boolean;
   onClick?: () => void;
   ongoingSince?: string;
+  statusColors: StatusColors;
 }
 
 function GridCell({
@@ -37,15 +52,18 @@ function GridCell({
   size = "small",
   isEditing,
   onClick,
-  ongoingSince
+  ongoingSince,
+  statusColors
 }: GridCellProps) {
   const [, setLocation] = useLocation();
 
-  const statusColors = {
-    available: "bg-green-100 border-green-200",
-    occupied: "bg-red-100 border-red-200",
-    reserved: "bg-yellow-100 border-yellow-200",
-    maintenance: "bg-gray-100 border-gray-200"
+  const getStatusColor = (status: UnitStatus) => {
+    return {
+      available: statusColors.available,
+      occupied: statusColors.occupied,
+      reserved: statusColors.reserved,
+      maintenance: statusColors.maintenance
+    }[status];
   };
 
   const handleClick = () => {
@@ -61,7 +79,7 @@ function GridCell({
       onClick={handleClick}
       className={`
         p-2 border-2 rounded-md cursor-pointer transition-all
-        ${isEditing ? 'hover:border-primary' : statusColors[status]}
+        ${isEditing ? 'hover:border-primary' : getStatusColor(status)}
         ${size === "large" ? "col-span-2 row-span-2" : ""}
         ${!isEditing && tenant ? 'hover:scale-105' : ''}
       `}
@@ -96,6 +114,13 @@ export default function SiteMapPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [selectedCell, setSelectedCell] = useState<number | null>(null);
   const [dimensions, setDimensions] = useState({ width: 10, height: 10 });
+  const [isColorDialogOpen, setIsColorDialogOpen] = useState(false);
+  const [statusColors, setStatusColors] = useState<StatusColors>({
+    available: "bg-green-100 border-green-200",
+    occupied: "bg-red-100 border-red-200",
+    reserved: "bg-yellow-100 border-yellow-200",
+    maintenance: "bg-gray-100 border-gray-200"
+  });
 
   const { data: layouts } = useQuery<FacilityLayout[]>({
     queryKey: ["/api/facility-layouts", selectedFacility],
@@ -152,22 +177,31 @@ export default function SiteMapPage() {
               View and manage facility layout
             </p>
           </div>
-          {isEditing ? (
-            <div className="space-x-2">
-              <Button variant="outline" onClick={() => setIsEditing(false)}>
-                Cancel
-              </Button>
-              <Button onClick={handleSave}>
-                <Save className="h-4 w-4 mr-2" />
-                Save Changes
-              </Button>
-            </div>
-          ) : (
-            <Button onClick={() => setIsEditing(true)}>
-              <Pencil className="h-4 w-4 mr-2" />
-              Edit Layout
+          <div className="space-x-2">
+            <Button
+              variant="outline"
+              onClick={() => setIsColorDialogOpen(true)}
+            >
+              <Palette className="h-4 w-4 mr-2" />
+              Unit Colors
             </Button>
-          )}
+            {isEditing ? (
+              <>
+                <Button variant="outline" onClick={() => setIsEditing(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={handleSave}>
+                  <Save className="h-4 w-4 mr-2" />
+                  Save Changes
+                </Button>
+              </>
+            ) : (
+              <Button onClick={() => setIsEditing(true)}>
+                <Pencil className="h-4 w-4 mr-2" />
+                Edit Layout
+              </Button>
+            )}
+          </div>
         </div>
 
         {/* Unit Statistics */}
@@ -242,12 +276,73 @@ export default function SiteMapPage() {
                     status={unit.isOccupied ? "occupied" : "available"}
                     isEditing={isEditing}
                     onClick={() => isEditing && setSelectedCell(index)}
+                    statusColors={statusColors}
                   />
                 );
               })}
             </div>
           </div>
         </Card>
+
+        {/* Color Customization Dialog */}
+        <Dialog open={isColorDialogOpen} onOpenChange={setIsColorDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Customize Unit Status Colors</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div>
+                <label className="text-sm font-medium">Available Units</label>
+                <Input
+                  value={statusColors.available}
+                  onChange={(e) => setStatusColors(prev => ({
+                    ...prev,
+                    available: e.target.value
+                  }))}
+                  placeholder="e.g. bg-green-100 border-green-200"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium">Occupied Units</label>
+                <Input
+                  value={statusColors.occupied}
+                  onChange={(e) => setStatusColors(prev => ({
+                    ...prev,
+                    occupied: e.target.value
+                  }))}
+                  placeholder="e.g. bg-red-100 border-red-200"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium">Reserved Units</label>
+                <Input
+                  value={statusColors.reserved}
+                  onChange={(e) => setStatusColors(prev => ({
+                    ...prev,
+                    reserved: e.target.value
+                  }))}
+                  placeholder="e.g. bg-yellow-100 border-yellow-200"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium">Maintenance Units</label>
+                <Input
+                  value={statusColors.maintenance}
+                  onChange={(e) => setStatusColors(prev => ({
+                    ...prev,
+                    maintenance: e.target.value
+                  }))}
+                  placeholder="e.g. bg-gray-100 border-gray-200"
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsColorDialogOpen(false)}>
+                Close
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         {isEditing && selectedCell !== null && (
           <Drawer open={selectedCell !== null} onOpenChange={() => setSelectedCell(null)}>
