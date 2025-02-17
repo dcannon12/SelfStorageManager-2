@@ -79,6 +79,12 @@ export async function registerRoutes(app: Express) {
 
   // Bookings
   app.get("/api/bookings", async (req, res) => {
+    if (req.query.customerId) {
+      const customerBookings = await storage.getBookings().then(bookings => 
+        bookings.filter(booking => booking.customerId === Number(req.query.customerId))
+      );
+      return res.json(customerBookings);
+    }
     const bookings = await storage.getBookings();
     res.json(bookings);
   });
@@ -193,6 +199,15 @@ export async function registerRoutes(app: Express) {
 
   // Payments
   app.get("/api/payments", async (req, res) => {
+    if (req.query.customerId) {
+      const customerPayments = await storage.getPayments().then(payments =>
+        payments.filter(payment => {
+          const booking = storage.getBookings().find(b => b.id === payment.bookingId);
+          return booking && booking.customerId === Number(req.query.customerId);
+        })
+      );
+      return res.json(customerPayments);
+    }
     const payments = await storage.getPayments();
     res.json(payments);
   });
