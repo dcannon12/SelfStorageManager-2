@@ -22,12 +22,12 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { format } from "date-fns";
-import { 
-  CreditCard, 
-  MessageSquare, 
-  Key, 
-  Mail, 
-  Phone, 
+import {
+  CreditCard,
+  MessageSquare,
+  Key,
+  Mail,
+  Phone,
   Home,
   DollarSign,
   CalendarDays,
@@ -90,6 +90,16 @@ export default function TenantDetailsPage() {
     updateCustomerMutation.mutate(editForm);
   };
 
+  // Helper function to safely format dates
+  const formatDate = (dateString: string | null | undefined): string => {
+    if (!dateString) return 'N/A';
+    try {
+      return format(new Date(dateString), 'MM/dd/yyyy');
+    } catch (e) {
+      return 'Invalid date';
+    }
+  };
+
   const balance = payments?.reduce((total, payment) => {
     if (payment.status === "pending") {
       return total + payment.amount;
@@ -113,8 +123,8 @@ export default function TenantDetailsPage() {
           <div className="flex justify-between items-center mb-4">
             <div className="flex items-center gap-4">
               <h1 className="text-2xl font-bold">{customer.name}</h1>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 size="sm"
                 onClick={() => {
                   setEditForm(customer);
@@ -178,7 +188,7 @@ export default function TenantDetailsPage() {
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-muted-foreground">Last Payment</span>
                   <span className="text-sm">
-                    {payments?.[0] ? format(new Date(payments[0].createdAt), 'MMM d, yyyy') : 'N/A'}
+                    {payments?.[0] ? formatDate(payments[0].createdAt) : 'N/A'}
                   </span>
                 </div>
               </div>
@@ -215,7 +225,7 @@ export default function TenantDetailsPage() {
                         <h3 className="text-sm font-medium text-muted-foreground mb-2">Billing</h3>
                         <div className="space-y-1">
                           <div className="text-sm">Monthly Rate: ${booking.monthlyRate}</div>
-                          <div className="text-sm">Next Bill: {format(new Date(booking.nextBillDate), 'MM/dd/yyyy')}</div>
+                          <div className="text-sm">Next Bill: {formatDate(booking.nextBillDate)}</div>
                           <div className="text-sm">Insurance: ${booking.insuranceAmount || '0.00'}</div>
                         </div>
                       </div>
@@ -252,7 +262,7 @@ export default function TenantDetailsPage() {
                 <TableBody>
                   {payments?.map((payment) => (
                     <TableRow key={payment.id}>
-                      <TableCell>{format(new Date(payment.createdAt), 'MMM d, yyyy')}</TableCell>
+                      <TableCell>{formatDate(payment.createdAt)}</TableCell>
                       <TableCell>Monthly Rent Payment</TableCell>
                       <TableCell>${payment.amount}</TableCell>
                       <TableCell>
@@ -279,7 +289,7 @@ export default function TenantDetailsPage() {
               <div className="space-y-3">
                 <div className="border-l-4 border-primary p-3 bg-muted/50 rounded">
                   <div className="text-sm text-muted-foreground mb-1">
-                    Added by John Doe on {format(new Date(), 'MMM d, yyyy')}
+                    Added by John Doe on {formatDate(new Date())}
                   </div>
                   <p className="text-sm">Called about gate access code reset. Issue resolved.</p>
                 </div>
@@ -340,7 +350,7 @@ export default function TenantDetailsPage() {
                 >
                   Cancel
                 </Button>
-                <Button 
+                <Button
                   type="submit"
                   disabled={updateCustomerMutation.isPending}
                 >
