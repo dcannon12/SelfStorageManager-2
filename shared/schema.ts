@@ -63,6 +63,9 @@ export const bookings = pgTable("bookings", {
   startDate: text("start_date").notNull(),
   endDate: text("end_date"),
   status: text("status", { enum: ["active", "completed", "cancelled"] }).notNull(),
+  monthlyRate: decimal("monthly_rate").notNull(),
+  nextBillDate: text("next_bill_date").notNull(),
+  insuranceAmount: decimal("insurance_amount"),
 });
 
 // Schema for data insertion

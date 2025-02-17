@@ -65,7 +65,10 @@ export default function TenantDetailsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
-      if (!response.ok) throw new Error('Failed to update customer');
+      if (!response.ok) {
+        const error = await response.text();
+        throw new Error(error || 'Failed to update customer');
+      }
       return response.json();
     },
     onSuccess: () => {
@@ -87,7 +90,17 @@ export default function TenantDetailsPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    updateCustomerMutation.mutate(editForm);
+    // Only send the fields that were actually changed
+    const changedFields = Object.fromEntries(
+      Object.entries(editForm).filter(([key, value]) => 
+        value !== customer?.[key as keyof Customer]
+      )
+    );
+    if (Object.keys(changedFields).length === 0) {
+      setIsEditing(false);
+      return;
+    }
+    updateCustomerMutation.mutate(changedFields);
   };
 
   // Helper function to safely format dates
