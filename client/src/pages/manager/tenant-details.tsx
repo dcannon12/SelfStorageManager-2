@@ -1,10 +1,11 @@
 import { ManagerLayout } from "@/components/manager-layout";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Customer, Payment, Booking } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useParams } from "wouter";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -13,6 +14,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { format } from "date-fns";
 import { 
   CreditCard, 
@@ -27,9 +35,15 @@ import {
   GitFork,
   Pencil
 } from "lucide-react";
+import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
+import { queryClient } from "@/lib/queryClient";
 
 export default function TenantDetailsPage() {
   const { id } = useParams();
+  const { toast } = useToast();
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm] = useState<Partial<Customer>>({});
 
   const { data: customer } = useQuery<Customer>({
     queryKey: ["/api/customers", id],
@@ -42,6 +56,38 @@ export default function TenantDetailsPage() {
   const { data: bookings } = useQuery<Booking[]>({
     queryKey: ["/api/bookings", { customerId: id }],
   });
+
+  const updateCustomerMutation = useMutation({
+    mutationFn: async (data: Partial<Customer>) => {
+      const response = await fetch(`/api/customers/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) throw new Error('Failed to update customer');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/customers", id] });
+      toast({
+        title: "Success",
+        description: "Customer details updated successfully",
+      });
+      setIsEditing(false);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    updateCustomerMutation.mutate(editForm);
+  };
 
   const balance = payments?.reduce((total, payment) => {
     if (payment.status === "pending") {
@@ -66,7 +112,14 @@ export default function TenantDetailsPage() {
           <div className="flex justify-between items-center mb-4">
             <div className="flex items-center gap-4">
               <h1 className="text-2xl font-bold">{customer.name}</h1>
-              <Button variant="outline" size="sm">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => {
+                  setEditForm(customer);
+                  setIsEditing(true);
+                }}
+              >
                 <Pencil className="h-4 w-4 mr-2" />
                 Edit Details
               </Button>
@@ -185,6 +238,69 @@ export default function TenantDetailsPage() {
             </div>
           </div>
         </div>
+
+        {/* Edit Dialog */}
+        <Dialog open={isEditing} onOpenChange={setIsEditing}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Edit Customer Details</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="text-sm font-medium">Name</label>
+                <Input
+                  value={editForm.name || ''}
+                  onChange={(e) => setEditForm(prev => ({ ...prev, name: e.target.value }))}
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium">Email</label>
+                <Input
+                  type="email"
+                  value={editForm.email || ''}
+                  onChange={(e) => setEditForm(prev => ({ ...prev, email: e.target.value }))}
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium">Phone</label>
+                <Input
+                  type="tel"
+                  value={editForm.phone || ''}
+                  onChange={(e) => setEditForm(prev => ({ ...prev, phone: e.target.value }))}
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium">Address</label>
+                <Input
+                  value={editForm.address || ''}
+                  onChange={(e) => setEditForm(prev => ({ ...prev, address: e.target.value }))}
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium">Gate Access Code</label>
+                <Input
+                  value={editForm.accessCode || ''}
+                  onChange={(e) => setEditForm(prev => ({ ...prev, accessCode: e.target.value }))}
+                />
+              </div>
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsEditing(false)}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  type="submit"
+                  disabled={updateCustomerMutation.isPending}
+                >
+                  {updateCustomerMutation.isPending ? 'Saving...' : 'Save Changes'}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
     </ManagerLayout>
   );
