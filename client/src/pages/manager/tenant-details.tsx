@@ -4,6 +4,16 @@ import { Customer, Payment, Booking } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useParams } from "wouter";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { format } from "date-fns";
 
 export default function TenantDetailsPage() {
   const { id } = useParams();
@@ -39,7 +49,6 @@ export default function TenantDetailsPage() {
     return total;
   }, 0) ?? 0;
 
-
   if (!customer) {
     return (
       <ManagerLayout>
@@ -65,7 +74,7 @@ export default function TenantDetailsPage() {
         </div>
 
         {/* Main Content */}
-        <div className="p-8">
+        <div className="p-8 space-y-8">
           {/* Customer Information Section */}
           <div className="bg-gray-100 p-4 rounded-md">
             <h2 className="text-xl font-semibold mb-4">Customer Information</h2>
@@ -130,21 +139,73 @@ export default function TenantDetailsPage() {
           </div>
 
           {/* Balance Information */}
-          <div className="mt-8">
-            <div className="bg-gray-100 p-4 rounded-md">
-              <h2 className="text-xl font-semibold mb-4">Balance: ${balance.toFixed(2)}</h2>
+          <div className="bg-gray-100 p-4 rounded-md">
+            <h2 className="text-xl font-semibold mb-4">Balance: ${balance.toFixed(2)}</h2>
+            <div className="space-y-4">
+              <div>
+                <div className="text-sm text-muted-foreground">Outstanding</div>
+                <div className="text-red-600">${balance.toFixed(2)}</div>
+              </div>
+              <div>
+                <div className="text-sm text-muted-foreground">Recurring Billing</div>
+                <Badge variant="outline">
+                  {customer.recurringBillingStatus === 'active' ? 'Active' : 'Not Activated'}
+                </Badge>
+              </div>
+            </div>
+          </div>
+
+          {/* Notes Section */}
+          <div className="bg-gray-100 p-4 rounded-md">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold">Notes</h2>
+              <Button variant="outline" size="sm">Add Note</Button>
+            </div>
+            <div className="space-y-4">
+              <Textarea
+                placeholder="Add a note about this tenant..."
+                className="min-h-[100px]"
+              />
               <div className="space-y-4">
-                <div>
-                  <div className="text-sm text-muted-foreground">Outstanding</div>
-                  <div className="text-red-600">${balance.toFixed(2)}</div>
-                </div>
-                <div>
-                  <div className="text-sm text-muted-foreground">Recurring Billing</div>
-                  <Badge variant="outline">
-                    {customer.recurringBillingStatus === 'active' ? 'Active' : 'Not Activated'}
-                  </Badge>
+                {/* Example notes - will need to be connected to backend */}
+                <div className="border-l-4 border-primary p-4 bg-white rounded">
+                  <div className="text-sm text-muted-foreground mb-2">
+                    Added by John Doe on {format(new Date(), 'MMM d, yyyy')}
+                  </div>
+                  <p>Called about gate access code reset. Issue resolved.</p>
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* Billing History */}
+          <div className="bg-gray-100 p-4 rounded-md">
+            <h2 className="text-xl font-semibold mb-4">Billing History</h2>
+            <div className="bg-white rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Description</TableHead>
+                    <TableHead>Amount</TableHead>
+                    <TableHead>Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {payments?.map((payment) => (
+                    <TableRow key={payment.id}>
+                      <TableCell>{format(new Date(payment.createdAt), 'MMM d, yyyy')}</TableCell>
+                      <TableCell>Monthly Rent Payment</TableCell>
+                      <TableCell>${payment.amount}</TableCell>
+                      <TableCell>
+                        <Badge variant={payment.status === 'completed' ? 'default' : 'secondary'}>
+                          {payment.status}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </div>
           </div>
 
