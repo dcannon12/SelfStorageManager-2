@@ -51,6 +51,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { TenantMessageDialog } from "@/components/dialogs/tenant-message-dialog";
+import { GateAccessDialog } from "@/components/dialogs/gate-access-dialog";
 
 // Remove strict validation requirements
 const updateCustomerSchema = z.object({
@@ -68,6 +69,7 @@ export default function TenantDetailsPage() {
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [isMessageDialogOpen, setIsMessageDialogOpen] = useState(false);
+  const [isGateAccessDialogOpen, setIsGateAccessDialogOpen] = useState(false);
 
   const form = useForm<UpdateCustomerInput>({
     resolver: zodResolver(updateCustomerSchema),
@@ -233,7 +235,11 @@ export default function TenantDetailsPage() {
                 <MessageSquare className="h-4 w-4 mr-2" />
                 Message
               </Button>
-              <Button variant="outline" size="sm">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsGateAccessDialogOpen(true)}
+              >
                 <Key className="h-4 w-4 mr-2" />
                 Gate Access
               </Button>
@@ -489,6 +495,11 @@ export default function TenantDetailsPage() {
           tenant={customer}
           open={isMessageDialogOpen}
           onOpenChange={setIsMessageDialogOpen}
+        />
+        <GateAccessDialog
+          tenant={customer}
+          open={isGateAccessDialogOpen}
+          onOpenChange={setIsGateAccessDialogOpen}
         />
       </div>
     </ManagerLayout>
