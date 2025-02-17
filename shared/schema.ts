@@ -229,13 +229,44 @@ export type InsertCustomerDocument = z.infer<typeof insertCustomerDocumentSchema
 export type InsertCustomerInsurance = z.infer<typeof insertCustomerInsuranceSchema>;
 export type InsertDigitalSignature = z.infer<typeof insertDigitalSignatureSchema>;
 
+// Added StorageManagerData table definition here
+export const storageManagerData = pgTable("StorageManagerData", {
+  id: serial("id").primaryKey(),
+  facilityId: integer("facility_id").notNull(),
+  facilityName: text("facility_name").notNull(),
+  facilityCode: text("facility_code").notNull(),
+  layoutId: integer("layout_id").references(() => facilityLayouts.id),
+  pricingGroupId: integer("pricing_group_id").references(() => pricingGroups.id),
+  totalUnits: integer("total_units").notNull(),
+  availableUnits: integer("available_units").notNull(),
+  occupiedUnits: integer("occupied_units").notNull(),
+  maintenanceUnits: integer("maintenance_units").notNull(),
+  totalRevenue: decimal("total_revenue").notNull().default("0"),
+  pendingPayments: decimal("pending_payments").notNull().default("0"),
+  overduePayments: decimal("overdue_payments").notNull().default("0"),
+  totalCustomers: integer("total_customers").notNull().default(0),
+  activeCustomers: integer("active_customers").notNull().default(0),
+  overdueCustomers: integer("overdue_customers").notNull().default(0),
+  totalBookings: integer("total_bookings").notNull().default(0),
+  activeBookings: integer("active_bookings").notNull().default(0),
+  totalLeads: integer("total_leads").notNull().default(0),
+  convertedLeads: integer("converted_leads").notNull().default(0),
+  lastUpdated: timestamp("last_updated").notNull().defaultNow(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+// Add type definitions
+export type StorageManagerData = typeof storageManagerData.$inferSelect;
+export type InsertStorageManagerData = typeof storageManagerData.$inferInsert;
+
 // Update exports
 export type { 
-  Unit, Customer, Booking, Lead, PricingGroup, Payment, 
+  Unit, Customer, Booking, Lead, PricingGroup, Payment,
   InsertUnit, InsertCustomer, InsertBooking, InsertLead, InsertPricingGroup, InsertPayment,
   FacilityLayout, InsertFacilityLayout,
   NotificationTemplate, NotificationLog,
   InsertNotificationTemplate, InsertNotificationLog,
   CustomerDocument, CustomerInsurance, DigitalSignature,
-  InsertCustomerDocument, InsertCustomerInsurance, InsertDigitalSignature
+  InsertCustomerDocument, InsertCustomerInsurance, InsertDigitalSignature,
+  StorageManagerData, InsertStorageManagerData
 };

@@ -103,16 +103,31 @@ A comprehensive self-storage management platform designed to streamline tenant m
 
 The application uses a PostgreSQL database with the following main entities:
 
+### Core Tables
 - Units
 - Customers
 - Bookings
 - Payments
 - Leads
 - PricingGroups
+
+### Supporting Tables
 - NotificationTemplates
 - CustomerDocuments
 - CustomerInsurance
 - DigitalSignatures
+
+### Analytics & Reporting
+- **StorageManagerData** - Central analytics table that aggregates data from multiple sources:
+  - Facility metrics (total units, occupancy rates)
+  - Financial data (revenue, pending/overdue payments)
+  - Customer statistics (total, active, overdue)
+  - Booking information (total, active bookings)
+  - Lead tracking (total, conversion rates)
+  - Automatic timestamp updates for real-time analytics
+  - Foreign key relationships with:
+    - facility_layouts (layout visualization)
+    - pricing_groups (pricing strategy)
 
 Each entity is defined in `shared/schema.ts` using Drizzle ORM with proper relations and validations.
 
@@ -137,3 +152,8 @@ Each entity is defined in `shared/schema.ts` using Drizzle ORM with proper relat
    - Use React Query for data fetching
    - Implement proper error handling
    - Maintain type safety with shared schemas
+
+5. **Data Analytics Integration**
+   - Use StorageManagerData for centralized metrics
+   - Implement automatic data aggregation
+   - Ensure real-time statistics updates
