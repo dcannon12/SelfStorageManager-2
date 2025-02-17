@@ -1,5 +1,10 @@
 import { createContext, useContext, useState, ReactNode } from "react";
-import type { Facility } from "@/components/manager-topbar";
+
+type Facility = {
+  id: number;
+  name: string;
+  code: string;
+};
 
 type FacilityContextType = {
   selectedFacility: Facility | 'all';
@@ -25,3 +30,5 @@ export function useFacility() {
   }
   return context;
 }
+
+export type { Facility };
