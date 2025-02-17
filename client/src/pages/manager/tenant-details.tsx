@@ -167,7 +167,7 @@ export default function TenantDetailsPage() {
     return total;
   }, 0) ?? 0;
 
-  if (isLoading || !customer) {
+  if (isLoading) {
     return (
       <ManagerLayout>
         <div className="p-8">
@@ -192,7 +192,7 @@ export default function TenantDetailsPage() {
                 <span>•</span>
                 <span>ID: {id}</span>
               </div>
-              <h1 className="text-3xl font-bold mb-2">{customer?.name || 'Loading...'}</h1>
+              <h1 className="text-3xl font-bold mb-2">{customer?.name}</h1>
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Badge variant={customer?.accountStatus === 'enabled' ? 'default' : 'secondary'}>
                   {customer?.accountStatus}
