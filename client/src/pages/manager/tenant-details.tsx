@@ -14,6 +14,18 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { format } from "date-fns";
+import { 
+  CreditCard, 
+  MessageSquare, 
+  Key, 
+  Mail, 
+  Phone, 
+  Home,
+  DollarSign,
+  CalendarDays,
+  FileText,
+  GitFork
+} from "lucide-react";
 
 export default function TenantDetailsPage() {
   const { id } = useParams();
@@ -30,18 +42,6 @@ export default function TenantDetailsPage() {
     queryKey: ["/api/bookings", { customerId: id }],
   });
 
-  const actionButtons = [
-    { label: "Recurring Billing", href: "#" },
-    { label: "Add Credit", href: "#" },
-    { label: "Fees/Products", href: "#" },
-    { label: "Make a Payment", href: "#" },
-    { label: "Edit Profile", href: "#" },
-    { label: "Rent Unit", href: "#" },
-    { label: "Reserve Unit", href: "#" },
-    { label: "Letters", href: "#" },
-    { label: "Gate Access", href: "#" },
-  ];
-
   const balance = payments?.reduce((total, payment) => {
     if (payment.status === "pending") {
       return total + payment.amount;
@@ -52,84 +52,85 @@ export default function TenantDetailsPage() {
   if (!customer) {
     return (
       <ManagerLayout>
-        <div className="p-8">Loading...</div>
+        <div className="p-4">Loading...</div>
       </ManagerLayout>
     );
   }
 
   return (
     <ManagerLayout>
-      <div className="space-y-4">
-        {/* Action Buttons */}
-        <div className="flex gap-2 p-4 bg-gray-50 border-b">
-          {actionButtons.map((button) => (
-            <Button
-              key={button.label}
-              variant="secondary"
-              size="sm"
-            >
-              {button.label}
-            </Button>
-          ))}
+      <div className="max-w-7xl mx-auto">
+        {/* Header & Quick Actions */}
+        <div className="p-4 border-b bg-white sticky top-0 z-10">
+          <div className="flex justify-between items-center mb-4">
+            <h1 className="text-2xl font-bold">{customer.name}</h1>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm">
+                <MessageSquare className="h-4 w-4 mr-2" />
+                Message
+              </Button>
+              <Button variant="outline" size="sm">
+                <Key className="h-4 w-4 mr-2" />
+                Gate Access
+              </Button>
+              <Button variant="default" size="sm">
+                <DollarSign className="h-4 w-4 mr-2" />
+                Make Payment
+              </Button>
+            </div>
+          </div>
         </div>
 
-        {/* Main Content */}
-        <div className="p-8 space-y-8">
-          {/* Customer Information Section */}
-          <div className="bg-gray-100 p-4 rounded-md">
-            <h2 className="text-xl font-semibold mb-4">Customer Information</h2>
-            <div className="space-y-4">
-              <div>
-                <div className="text-sm text-muted-foreground">Name</div>
-                <div>{customer.name}</div>
-              </div>
-              <div>
-                <div className="text-sm text-muted-foreground">Email</div>
-                <div>{customer.email}</div>
-              </div>
-              <div>
-                <div className="text-sm text-muted-foreground">Phone</div>
-                <div>{customer.phone}</div>
-              </div>
-              <div>
-                <div className="text-sm text-muted-foreground">Cell Phone</div>
+        <div className="p-4 grid gap-4 md:grid-cols-3">
+          {/* Contact Information */}
+          <div className="md:col-span-1 space-y-4">
+            <div className="bg-white p-4 rounded-lg border">
+              <h2 className="text-lg font-semibold mb-4">Contact Information</h2>
+              <div className="space-y-3">
                 <div className="flex items-center gap-2">
-                  <span>{customer.phone}</span>
-                  <Button variant="outline" size="sm">Text Messaging</Button>
+                  <Mail className="h-4 w-4 text-muted-foreground" />
+                  <div className="text-sm">{customer.email}</div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Phone className="h-4 w-4 text-muted-foreground" />
+                  <div className="text-sm">{customer.phone}</div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Home className="h-4 w-4 text-muted-foreground" />
+                  <div className="text-sm">{customer.address}</div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <GitFork className="h-4 w-4 text-muted-foreground" />
+                  <div className="text-sm">Gate Code: {customer.accessCode || 'Not set'}</div>
                 </div>
               </div>
-              <div>
-                <div className="text-sm text-muted-foreground">Address</div>
-                <div>{customer.address}</div>
-              </div>
-              <div>
-                <div className="text-sm text-muted-foreground">Gate Access Code</div>
-                <div>{customer.accessCode || 'Not set'}</div>
+            </div>
+
+            {/* Balance Summary */}
+            <div className="bg-white p-4 rounded-lg border">
+              <h2 className="text-lg font-semibold mb-4">Balance Summary</h2>
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Outstanding</span>
+                  <span className="font-medium text-red-600">${balance.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Last Payment</span>
+                  <span className="text-sm">
+                    {payments?.[0] ? format(new Date(payments[0].createdAt), 'MMM d, yyyy') : 'N/A'}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Balance Information */}
-          <div className="bg-gray-100 p-4 rounded-md">
-            <h2 className="text-xl font-semibold mb-4">Balance: ${balance.toFixed(2)}</h2>
-            <div className="space-y-4">
-              <div>
-                <div className="text-sm text-muted-foreground">Outstanding</div>
-                <div className="text-red-600">${balance.toFixed(2)}</div>
+          {/* Main Content */}
+          <div className="md:col-span-2 space-y-4">
+            {/* Payment History */}
+            <div className="bg-white rounded-lg border">
+              <div className="p-4 border-b">
+                <h2 className="text-lg font-semibold">Payment History</h2>
               </div>
-              <div>
-                <div className="text-sm text-muted-foreground">Recurring Billing</div>
-                <Badge variant="outline">
-                  {customer.recurringBillingStatus === 'active' ? 'Active' : 'Not Activated'}
-                </Badge>
-              </div>
-            </div>
-          </div>
-
-          {/* Billing History */}
-          <div className="bg-gray-100 p-4 rounded-md">
-            <h2 className="text-xl font-semibold mb-4">Billing History</h2>
-            <div className="bg-white rounded-md border">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -155,25 +156,23 @@ export default function TenantDetailsPage() {
                 </TableBody>
               </Table>
             </div>
-          </div>
 
-          {/* Notes Section */}
-          <div className="bg-gray-100 p-4 rounded-md">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold">Notes</h2>
-              <Button variant="outline" size="sm">Add Note</Button>
-            </div>
-            <div className="space-y-4">
+            {/* Notes */}
+            <div className="bg-white p-4 rounded-lg border">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-lg font-semibold">Notes</h2>
+                <Button variant="outline" size="sm">Add Note</Button>
+              </div>
               <Textarea
                 placeholder="Add a note about this tenant..."
-                className="min-h-[100px]"
+                className="min-h-[100px] mb-4"
               />
-              <div className="space-y-4">
-                <div className="border-l-4 border-primary p-4 bg-white rounded">
-                  <div className="text-sm text-muted-foreground mb-2">
+              <div className="space-y-3">
+                <div className="border-l-4 border-primary p-3 bg-muted/50 rounded">
+                  <div className="text-sm text-muted-foreground mb-1">
                     Added by John Doe on {format(new Date(), 'MMM d, yyyy')}
                   </div>
-                  <p>Called about gate access code reset. Issue resolved.</p>
+                  <p className="text-sm">Called about gate access code reset. Issue resolved.</p>
                 </div>
               </div>
             </div>
