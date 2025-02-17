@@ -11,6 +11,8 @@ import {
 import { Customer } from "@shared/schema";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { useMutation } from "@tanstack/react-query";
+import { queryClient } from "@/lib/queryClient";
 
 interface GateAccessDialogProps {
   tenant: Customer;
@@ -30,21 +32,42 @@ export function GateAccessDialog({ tenant, open, onOpenChange }: GateAccessDialo
     { id: "extended", name: "Extended Hours (6AM-10PM)" },
   ];
 
-  const handleSave = async () => {
-    try {
-      // TODO: Implement API call to update gate access
+  const updateGateAccessMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch(`/api/customers/${tenant.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          accessCode: gateCode,
+          gateGroup: gateGroup
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update gate access');
+      }
+
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/customers", tenant.id] });
       toast({
         title: "Success",
         description: "Gate access settings updated successfully",
       });
       onOpenChange(false);
-    } catch (error) {
+    },
+    onError: (error: Error) => {
       toast({
         title: "Error",
-        description: "Failed to update gate access settings",
+        description: error.message,
         variant: "destructive",
       });
-    }
+    },
+  });
+
+  const handleSave = () => {
+    updateGateAccessMutation.mutate();
   };
 
   return (
@@ -53,7 +76,7 @@ export function GateAccessDialog({ tenant, open, onOpenChange }: GateAccessDialo
         <DialogHeader>
           <DialogTitle>Gate Access Settings - {tenant.name}</DialogTitle>
         </DialogHeader>
-        
+
         <div className="grid gap-4 py-4">
           <div className="space-y-2">
             <h3 className="text-sm font-medium">Gate Access Code</h3>
@@ -91,7 +114,12 @@ export function GateAccessDialog({ tenant, open, onOpenChange }: GateAccessDialo
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={handleSave}>Save Changes</Button>
+          <Button 
+            onClick={handleSave}
+            disabled={updateGateAccessMutation.isPending}
+          >
+            {updateGateAccessMutation.isPending ? 'Saving...' : 'Save Changes'}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
