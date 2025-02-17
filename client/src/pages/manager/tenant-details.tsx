@@ -78,8 +78,10 @@ export default function TenantDetailsPage() {
     },
   });
 
+  // Fetch specific tenant data
   const { data: customer, isLoading } = useQuery<Customer>({
-    queryKey: ["/api/customers", id],
+    queryKey: ["/api/customers", parseInt(id)],
+    enabled: !!id
   });
 
   const { data: payments } = useQuery<Payment[]>({
@@ -181,11 +183,11 @@ export default function TenantDetailsPage() {
         <div className="p-6 border-b bg-white sticky top-0 z-10">
           <div className="flex justify-between items-center mb-4">
             <div>
-              <h1 className="text-3xl font-bold mb-2">{customer.name}</h1>
+              <h1 className="text-3xl font-bold mb-2">{customer?.name || 'Loading...'}</h1>
               <div className="flex items-center gap-2 text-muted-foreground">
-                <Badge variant="outline">{customer.accountStatus}</Badge>
+                <Badge variant="outline">{customer?.accountStatus}</Badge>
                 <span>•</span>
-                <span>Tenant ID: {customer.id}</span>
+                <span>Tenant ID: {id}</span>
               </div>
             </div>
             <div className="flex items-center gap-2">
