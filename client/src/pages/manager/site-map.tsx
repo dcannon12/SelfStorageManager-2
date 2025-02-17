@@ -68,6 +68,7 @@ function GridCell({
     >
       {unit && (
         <div className="text-xs">
+          <div className="font-bold text-sm mb-1">Unit {unit.id}</div>
           <div className="font-semibold">{unit.type}</div>
           <div>{unit.size}</div>
           <Badge variant="outline" className="mt-1">
