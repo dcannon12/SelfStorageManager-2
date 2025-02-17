@@ -62,20 +62,17 @@ export default function CollectionsPage() {
 
   // Apply filters
   const filteredCustomers = overdueCustomers.filter(({ customer, payment, daysOverdue }) => {
-    // Search filter
     const searchTerm = search.toLowerCase();
     const matchesSearch = !search ||
       customer?.name.toLowerCase().includes(searchTerm) ||
       customer?.email.toLowerCase().includes(searchTerm) ||
       customer?.phone.toLowerCase().includes(searchTerm);
 
-    // Days overdue filter
     const matchesDaysOverdue = daysOverdueFilter === "all" ||
       (daysOverdueFilter === "0-30" && daysOverdue <= 30) ||
       (daysOverdueFilter === "31-60" && daysOverdue > 30 && daysOverdue <= 60) ||
       (daysOverdueFilter === "60+" && daysOverdue > 60);
 
-    // Amount filter
     const matchesAmount = amountFilter === "all" ||
       (amountFilter === "0-500" && payment.amount <= 500) ||
       (amountFilter === "501-1000" && payment.amount > 500 && payment.amount <= 1000) ||
@@ -86,51 +83,45 @@ export default function CollectionsPage() {
 
   return (
     <ManagerLayout>
-      <div className="max-w-[1400px] mx-auto p-8">
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-bold">Collections</h1>
-            <p className="text-muted-foreground">
-              {filteredCustomers.length} tenants with outstanding balances
-            </p>
-          </div>
-        </div>
+      <div className="p-6">
+        <h1 className="text-3xl font-bold">Collections</h1>
+        <p className="text-muted-foreground">
+          {filteredCustomers.length} tenants with outstanding balances
+        </p>
 
         {/* Filters */}
-        <div className="mb-6 space-y-4">
-          <div className="flex items-center gap-4">
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search by tenant name, email, or phone..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-9"
-              />
-            </div>
-            <Select value={daysOverdueFilter} onValueChange={setDaysOverdueFilter}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Days Overdue" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Days</SelectItem>
-                <SelectItem value="0-30">0-30 days</SelectItem>
-                <SelectItem value="31-60">31-60 days</SelectItem>
-                <SelectItem value="60+">60+ days</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={amountFilter} onValueChange={setAmountFilter}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Amount Range" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Amounts</SelectItem>
-                <SelectItem value="0-500">$0-$500</SelectItem>
-                <SelectItem value="501-1000">$501-$1000</SelectItem>
-                <SelectItem value="1000+">$1000+</SelectItem>
-              </SelectContent>
-            </Select>
+        <div className="my-6 flex items-center gap-4">
+          <div className="relative w-[400px]">
+            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search by tenant name, email, or phone..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9"
+            />
           </div>
+          <Select value={daysOverdueFilter} onValueChange={setDaysOverdueFilter}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="All Days" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Days</SelectItem>
+              <SelectItem value="0-30">0-30 days</SelectItem>
+              <SelectItem value="31-60">31-60 days</SelectItem>
+              <SelectItem value="60+">60+ days</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={amountFilter} onValueChange={setAmountFilter}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="All Amounts" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Amounts</SelectItem>
+              <SelectItem value="0-500">$0-$500</SelectItem>
+              <SelectItem value="501-1000">$501-$1000</SelectItem>
+              <SelectItem value="1000+">$1000+</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Table */}
@@ -138,39 +129,35 @@ export default function CollectionsPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[250px]">Tenant</TableHead>
-                <TableHead className="w-[300px]">Contact</TableHead>
-                <TableHead className="w-[150px]">Amount Due</TableHead>
-                <TableHead className="w-[150px]">Days Overdue</TableHead>
-                <TableHead className="w-[150px]">Status</TableHead>
+                <TableHead className="w-[200px]">Tenant</TableHead>
+                <TableHead className="w-[200px]">Contact</TableHead>
+                <TableHead className="w-[120px]">Amount Due</TableHead>
+                <TableHead className="w-[120px]">Days Overdue</TableHead>
+                <TableHead>Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredCustomers.map(({ payment, customer, daysOverdue }) => (
-                <Link key={payment.id} href={`/manager/tenant/${customer?.id}`}>
-                  <TableRow className="cursor-pointer hover:bg-muted/50">
-                    <TableCell className="font-medium">{customer?.name ?? "Unknown"}</TableCell>
-                    <TableCell>
-                      <div className="space-y-1">
-                        <div>{customer?.email}</div>
-                        <div className="text-sm text-muted-foreground">
-                          {customer?.phone}
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>${payment.amount}</TableCell>
-                    <TableCell>
-                      <Badge variant={daysOverdue > 30 ? "destructive" : "secondary"}>
-                        {daysOverdue} days
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline">
-                        Needs Contact
-                      </Badge>
-                    </TableCell>
-                  </TableRow>
-                </Link>
+                <TableRow key={payment.id} className="hover:bg-muted/50">
+                  <TableCell>{customer?.name ?? "Unknown"}</TableCell>
+                  <TableCell>
+                    <div>{customer?.email}</div>
+                    <div className="text-sm text-muted-foreground">
+                      {customer?.phone}
+                    </div>
+                  </TableCell>
+                  <TableCell>${payment.amount}</TableCell>
+                  <TableCell>
+                    <Badge variant={daysOverdue > 30 ? "destructive" : "secondary"}>
+                      {daysOverdue} days
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant="outline">
+                      Needs Contact
+                    </Badge>
+                  </TableCell>
+                </TableRow>
               ))}
             </TableBody>
           </Table>
