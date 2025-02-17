@@ -78,7 +78,7 @@ export default function TenantDetailsPage() {
     },
   });
 
-  const { data: customer } = useQuery<Customer>({
+  const { data: customer, isLoading } = useQuery<Customer>({
     queryKey: ["/api/customers", id],
   });
 
@@ -161,10 +161,15 @@ export default function TenantDetailsPage() {
     return total;
   }, 0) ?? 0;
 
-  if (!customer) {
+  if (isLoading || !customer) {
     return (
       <ManagerLayout>
-        <div className="p-4">Loading...</div>
+        <div className="p-8">
+          <div className="animate-pulse space-y-4">
+            <div className="h-8 w-64 bg-muted rounded"></div>
+            <div className="h-4 w-32 bg-muted rounded"></div>
+          </div>
+        </div>
       </ManagerLayout>
     );
   }
@@ -173,31 +178,34 @@ export default function TenantDetailsPage() {
     <ManagerLayout>
       <div className="max-w-7xl mx-auto">
         {/* Header & Quick Actions */}
-        <div className="p-4 border-b bg-white sticky top-0 z-10">
+        <div className="p-6 border-b bg-white sticky top-0 z-10">
           <div className="flex justify-between items-center mb-4">
-            <div className="flex items-center gap-4">
-              <h1 className="text-2xl font-bold">{customer.name}</h1>
+            <div>
+              <h1 className="text-3xl font-bold mb-2">{customer.name}</h1>
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Badge variant="outline">{customer.accountStatus}</Badge>
+                <span>•</span>
+                <span>Tenant ID: {customer.id}</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => {
-                  if (customer) {
-                    form.reset({
-                      name: customer.name,
-                      email: customer.email,
-                      phone: customer.phone,
-                      address: customer.address ?? "",
-                      accessCode: customer.accessCode ?? "",
-                    });
-                  }
+                  form.reset({
+                    name: customer.name,
+                    email: customer.email,
+                    phone: customer.phone,
+                    address: customer.address ?? "",
+                    accessCode: customer.accessCode ?? "",
+                  });
                   setIsEditing(true);
                 }}
               >
                 <Pencil className="h-4 w-4 mr-2" />
                 Edit Details
               </Button>
-            </div>
-            <div className="flex items-center gap-2">
               <Button variant="outline" size="sm">
                 <MessageSquare className="h-4 w-4 mr-2" />
                 Message
