@@ -86,7 +86,7 @@ export default function CollectionsPage() {
 
   return (
     <ManagerLayout>
-      <div className="p-8">
+      <div className="max-w-[1400px] mx-auto p-8">
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold">Collections</h1>
@@ -98,8 +98,8 @@ export default function CollectionsPage() {
 
         {/* Filters */}
         <div className="mb-6 space-y-4">
-          <div className="flex items-center space-x-4">
-            <div className="relative flex-1">
+          <div className="flex items-center gap-4">
+            <div className="relative flex-1 max-w-md">
               <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search by tenant name, email, or phone..."
@@ -133,22 +133,23 @@ export default function CollectionsPage() {
           </div>
         </div>
 
-        <div className="rounded-md border">
+        {/* Table */}
+        <div className="bg-white rounded-md border">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Tenant</TableHead>
-                <TableHead>Contact</TableHead>
-                <TableHead>Amount Due</TableHead>
-                <TableHead>Days Overdue</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead className="w-[250px]">Tenant</TableHead>
+                <TableHead className="w-[300px]">Contact</TableHead>
+                <TableHead className="w-[150px]">Amount Due</TableHead>
+                <TableHead className="w-[150px]">Days Overdue</TableHead>
+                <TableHead className="w-[150px]">Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredCustomers.map(({ payment, customer, daysOverdue }) => (
                 <Link key={payment.id} href={`/manager/tenant/${customer?.id}`}>
                   <TableRow className="cursor-pointer hover:bg-muted/50">
-                    <TableCell>{customer?.name ?? "Unknown"}</TableCell>
+                    <TableCell className="font-medium">{customer?.name ?? "Unknown"}</TableCell>
                     <TableCell>
                       <div className="space-y-1">
                         <div>{customer?.email}</div>
