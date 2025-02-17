@@ -17,6 +17,7 @@ import ManagerMessaging from "@/pages/manager/messaging";
 import ManagerCollections from "@/pages/manager/collections";
 import ManagerSiteMap from "@/pages/manager/site-map";
 import TenantDetails from "@/pages/manager/tenant-details";
+import ManagerGate from "@/pages/manager/gate";
 import NotFound from "@/pages/not-found";
 import ManagerNotifications from "@/pages/manager/notifications";
 
@@ -38,6 +39,7 @@ function Router() {
       <Route path="/manager/site-map" component={ManagerSiteMap} />
       <Route path="/manager/reports" component={ManagerReports} />
       <Route path="/manager/locks" component={ManagerLocks} />
+      <Route path="/manager/gate" component={ManagerGate} />
       <Route path="/manager/messaging" component={ManagerMessaging} />
       <Route path="/manager/tenant/:id" component={TenantDetails} />
       <Route path="/manager/notifications" component={ManagerNotifications} />
