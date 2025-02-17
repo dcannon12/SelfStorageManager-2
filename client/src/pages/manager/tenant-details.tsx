@@ -187,11 +187,18 @@ export default function TenantDetailsPage() {
         <div className="p-6 border-b bg-white sticky top-0 z-10">
           <div className="flex justify-between items-center mb-4">
             <div>
+              <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                <Badge variant="outline">Tenant</Badge>
+                <span>•</span>
+                <span>ID: {id}</span>
+              </div>
               <h1 className="text-3xl font-bold mb-2">{customer?.name || 'Loading...'}</h1>
               <div className="flex items-center gap-2 text-muted-foreground">
-                <Badge variant="outline">{customer?.accountStatus}</Badge>
+                <Badge variant={customer?.accountStatus === 'enabled' ? 'default' : 'secondary'}>
+                  {customer?.accountStatus}
+                </Badge>
                 <span>•</span>
-                <span>Tenant ID: {id}</span>
+                <span>{customer?.email}</span>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -200,11 +207,11 @@ export default function TenantDetailsPage() {
                 size="sm"
                 onClick={() => {
                   form.reset({
-                    name: customer.name,
-                    email: customer.email,
-                    phone: customer.phone,
-                    address: customer.address ?? "",
-                    accessCode: customer.accessCode ?? "",
+                    name: customer?.name || '',
+                    email: customer?.email || '',
+                    phone: customer?.phone || '',
+                    address: customer?.address ?? "",
+                    accessCode: customer?.accessCode ?? "",
                   });
                   setIsEditing(true);
                 }}
@@ -255,8 +262,7 @@ export default function TenantDetailsPage() {
             </div>
 
             {/* Balance Summary */}
-            {/* Balance Summary Section */}
-            <div className="bg-white p-4 rounded-lg border mt-4">
+            <div className="bg-white p-4 rounded-lg border">
               <h2 className="text-lg font-semibold mb-4">Balance Summary</h2>
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
@@ -278,7 +284,7 @@ export default function TenantDetailsPage() {
             {/* Current Rentals */}
             <div className="bg-white rounded-lg border">
               <div className="p-4 border-b">
-                <h2 className="text-lg font-semibold">Current Rentals</h2>
+                <h2 className="text-lg font-semibold">Current Rentals for {customer?.name}</h2>
               </div>
               <div className="divide-y">
                 {bookings?.filter(booking => booking.customerId === parseInt(id!)).map((booking) => (
@@ -290,7 +296,7 @@ export default function TenantDetailsPage() {
                         <div className="space-y-1">
                           <div className="font-semibold">Unit {booking.unitId}</div>
                           <div className="text-sm">Size: 10x20</div>
-                          <div className="text-sm">Status: Rented</div>
+                          <div className="text-sm">Status: Rented by {customer?.name}</div>
                           <Button variant="link" size="sm" className="h-auto p-0">
                             <LinkIcon className="h-3 w-3 mr-1" />
                             View Agreement
