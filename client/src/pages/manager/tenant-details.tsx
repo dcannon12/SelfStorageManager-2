@@ -80,16 +80,19 @@ export default function TenantDetailsPage() {
 
   // Fetch specific tenant data
   const { data: customer, isLoading } = useQuery<Customer>({
-    queryKey: ["/api/customers", parseInt(id)],
-    enabled: !!id
+    queryKey: ["/api/customers", parseInt(id!)],
+    enabled: !!id,
+    staleTime: 0, // Disable caching to ensure fresh data
   });
 
   const { data: payments } = useQuery<Payment[]>({
-    queryKey: ["/api/payments", { customerId: id }],
+    queryKey: ["/api/payments", { customerId: parseInt(id!) }],
+    enabled: !!id,
   });
 
   const { data: bookings } = useQuery<Booking[]>({
-    queryKey: ["/api/bookings", { customerId: id }],
+    queryKey: ["/api/bookings", { customerId: parseInt(id!) }],
+    enabled: !!id,
   });
 
   // Update form when customer data is loaded
