@@ -24,7 +24,8 @@ import {
   DollarSign,
   CalendarDays,
   FileText,
-  GitFork
+  GitFork,
+  Pencil
 } from "lucide-react";
 
 export default function TenantDetailsPage() {
@@ -63,7 +64,13 @@ export default function TenantDetailsPage() {
         {/* Header & Quick Actions */}
         <div className="p-4 border-b bg-white sticky top-0 z-10">
           <div className="flex justify-between items-center mb-4">
-            <h1 className="text-2xl font-bold">{customer.name}</h1>
+            <div className="flex items-center gap-4">
+              <h1 className="text-2xl font-bold">{customer.name}</h1>
+              <Button variant="outline" size="sm">
+                <Pencil className="h-4 w-4 mr-2" />
+                Edit Details
+              </Button>
+            </div>
             <div className="flex items-center gap-2">
               <Button variant="outline" size="sm">
                 <MessageSquare className="h-4 w-4 mr-2" />
