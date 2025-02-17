@@ -42,30 +42,53 @@ export default function CollectionsPage() {
     queryKey: ["/api/bookings"],
   });
 
-  const overduePayments = payments?.filter(payment =>
-    payment.status === "pending" && new Date(payment.createdAt) < new Date()
-  ) ?? [];
+  // Calculate total outstanding balance for each customer
+  const customerBalances = new Map<number, number>();
+  payments?.forEach(payment => {
+    if (payment.status === "pending") {
+      const booking = bookings?.find(b => b.id === payment.bookingId);
+      if (booking) {
+        const customerId = booking.customerId;
+        customerBalances.set(
+          customerId,
+          (customerBalances.get(customerId) || 0) + payment.amount
+        );
+      }
+    }
+  });
 
-  const overdueCustomers = overduePayments.map(payment => {
-    const booking = bookings?.find(b => b.id === payment.bookingId);
-    const customer = customers?.find(c => booking?.customerId === c.id);
+  const overdueCustomers = Array.from(customerBalances.entries()).map(([customerId, balance]) => {
+    const customer = customers?.find(c => c.id === customerId);
+    const customerPayments = payments?.filter(p => {
+      const booking = bookings?.find(b => b.id === p.bookingId);
+      return booking?.customerId === customerId && p.status === "pending";
+    }) ?? [];
+
+    const oldestOverduePayment = customerPayments.reduce((oldest, current) => {
+      return new Date(current.createdAt) < new Date(oldest.createdAt) ? current : oldest;
+    }, customerPayments[0]);
+
     const daysOverdue = Math.floor(
-      (new Date().getTime() - new Date(payment.createdAt).getTime()) /
+      (new Date().getTime() - new Date(oldestOverduePayment?.createdAt ?? 0).getTime()) /
         (1000 * 60 * 60 * 24)
     );
+
     return {
-      payment,
       customer,
+      balance,
       daysOverdue,
+      oldestOverduePayment
     };
   });
 
-  const filteredCustomers = overdueCustomers.filter(({ customer, payment, daysOverdue }) => {
+  const filteredCustomers = overdueCustomers.filter(({ customer, balance, daysOverdue }) => {
+    if (!customer) return false;
+
     const searchTerm = search.toLowerCase();
     const matchesSearch = !search ||
-      customer?.name.toLowerCase().includes(searchTerm) ||
-      customer?.email.toLowerCase().includes(searchTerm) ||
-      customer?.phone.toLowerCase().includes(searchTerm);
+      customer.name.toLowerCase().includes(searchTerm) ||
+      customer.email.toLowerCase().includes(searchTerm) ||
+      customer.phone.toLowerCase().includes(searchTerm);
 
     const matchesDaysOverdue = daysOverdueFilter === "all" ||
       (daysOverdueFilter === "0-30" && daysOverdue <= 30) ||
@@ -73,12 +96,22 @@ export default function CollectionsPage() {
       (daysOverdueFilter === "60+" && daysOverdue > 60);
 
     const matchesAmount = amountFilter === "all" ||
-      (amountFilter === "0-500" && payment.amount <= 500) ||
-      (amountFilter === "501-1000" && payment.amount > 500 && payment.amount <= 1000) ||
-      (amountFilter === "1000+" && payment.amount > 1000);
+      (amountFilter === "0-500" && balance <= 500) ||
+      (amountFilter === "501-1000" && balance > 500 && balance <= 1000) ||
+      (amountFilter === "1000+" && balance > 1000);
 
     return matchesSearch && matchesDaysOverdue && matchesAmount;
   }).sort((a, b) => b.daysOverdue - a.daysOverdue);
+
+  const getStatusBadge = (daysOverdue: number) => {
+    if (daysOverdue > 60) {
+      return <Badge variant="destructive">Legal Action Required</Badge>;
+    } else if (daysOverdue > 30) {
+      return <Badge variant="destructive">Urgent Collection</Badge>;
+    } else {
+      return <Badge variant="secondary">Follow Up</Badge>;
+    }
+  };
 
   return (
     <ManagerLayout>
@@ -130,35 +163,35 @@ export default function CollectionsPage() {
               <TableRow>
                 <TableHead className="w-[200px]">Tenant</TableHead>
                 <TableHead className="w-[200px]">Contact</TableHead>
-                <TableHead className="w-[120px]">Amount Due</TableHead>
+                <TableHead className="w-[120px]">Outstanding Balance</TableHead>
                 <TableHead className="w-[120px]">Days Overdue</TableHead>
                 <TableHead>Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredCustomers.map(({ payment, customer, daysOverdue }) => (
+              {filteredCustomers.map(({ customer, balance, daysOverdue }) => (
                 <TableRow 
-                  key={payment.id} 
+                  key={customer?.id} 
                   className="cursor-pointer hover:bg-muted/50"
                   onClick={() => customer && navigate(`/manager/tenant/${customer.id}`)}
                 >
-                  <TableCell>{customer?.name ?? "Unknown"}</TableCell>
+                  <TableCell>{customer?.name}</TableCell>
                   <TableCell>
                     <div>{customer?.email}</div>
                     <div className="text-sm text-muted-foreground">
                       {customer?.phone}
                     </div>
                   </TableCell>
-                  <TableCell>${payment.amount}</TableCell>
+                  <TableCell className="font-medium">
+                    ${balance.toLocaleString()}
+                  </TableCell>
                   <TableCell>
                     <Badge variant={daysOverdue > 30 ? "destructive" : "secondary"}>
                       {daysOverdue} days
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <Badge variant="outline">
-                      Needs Contact
-                    </Badge>
+                    {getStatusBadge(daysOverdue)}
                   </TableCell>
                 </TableRow>
               ))}
