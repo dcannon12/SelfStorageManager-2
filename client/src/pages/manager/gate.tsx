@@ -1,6 +1,5 @@
 import { ManagerLayout } from "@/components/manager-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useQuery } from "@tanstack/react-query";
 import {
   Table,
   TableBody,
