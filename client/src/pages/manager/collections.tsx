@@ -138,26 +138,28 @@ export default function CollectionsPage() {
             </TableHeader>
             <TableBody>
               {filteredCustomers.map(({ payment, customer, daysOverdue }) => (
-                <TableRow key={payment.id} className="hover:bg-muted/50">
-                  <TableCell>{customer?.name ?? "Unknown"}</TableCell>
-                  <TableCell>
-                    <div>{customer?.email}</div>
-                    <div className="text-sm text-muted-foreground">
-                      {customer?.phone}
-                    </div>
-                  </TableCell>
-                  <TableCell>${payment.amount}</TableCell>
-                  <TableCell>
-                    <Badge variant={daysOverdue > 30 ? "destructive" : "secondary"}>
-                      {daysOverdue} days
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline">
-                      Needs Contact
-                    </Badge>
-                  </TableCell>
-                </TableRow>
+                <Link key={payment.id} href={`/manager/tenant/${customer?.id}`}>
+                  <TableRow className="cursor-pointer hover:bg-muted/50">
+                    <TableCell>{customer?.name ?? "Unknown"}</TableCell>
+                    <TableCell>
+                      <div>{customer?.email}</div>
+                      <div className="text-sm text-muted-foreground">
+                        {customer?.phone}
+                      </div>
+                    </TableCell>
+                    <TableCell>${payment.amount}</TableCell>
+                    <TableCell>
+                      <Badge variant={daysOverdue > 30 ? "destructive" : "secondary"}>
+                        {daysOverdue} days
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline">
+                        Needs Contact
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                </Link>
               ))}
             </TableBody>
           </Table>
