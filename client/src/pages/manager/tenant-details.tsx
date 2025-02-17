@@ -15,18 +15,20 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
-import { queryClient } from "@/lib/queryClient";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { format } from "date-fns";
 import {
   CreditCard,
@@ -42,30 +44,39 @@ import {
   Pencil,
   Link as LinkIcon
 } from "lucide-react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { useState, useEffect } from "react";
+import { useToast } from "@/hooks/use-toast";
+import { queryClient } from "@/lib/queryClient";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 
-// Simple update schema that matches the database schema
-const updateSchema = z.object({
+// Create a more lenient update schema with proper string handling
+const updateCustomerSchema = z.object({
   name: z.string().min(1, "Name is required"),
   email: z.string().email("Invalid email address"),
-  phone: z.string().min(1, "Phone is required"),
-  address: z.string().optional(),
-  accessCode: z.string().optional()
+  phone: z.string().min(1, "Phone number is required"),
+  address: z.string().optional().or(z.literal('')),
+  accessCode: z.string().optional().or(z.literal('')),
 });
 
-type UpdateInput = z.infer<typeof updateSchema>;
+type UpdateCustomerInput = z.infer<typeof updateCustomerSchema>;
 
 export default function TenantDetailsPage() {
   const { id } = useParams();
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
+
+  const form = useForm<UpdateCustomerInput>({
+    resolver: zodResolver(updateCustomerSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      phone: "",
+      address: "",
+      accessCode: "",
+    },
+  });
 
   const { data: customer } = useQuery<Customer>({
     queryKey: ["/api/customers", id],
@@ -79,27 +90,35 @@ export default function TenantDetailsPage() {
     queryKey: ["/api/bookings", { customerId: id }],
   });
 
-  const form = useForm<UpdateInput>({
-    resolver: zodResolver(updateSchema),
-    defaultValues: {
-      name: customer?.name || "",
-      email: customer?.email || "",
-      phone: customer?.phone || "",
-      address: customer?.address || "",
-      accessCode: customer?.accessCode || "",
+  // Update form when customer data is loaded
+  useEffect(() => {
+    if (customer) {
+      form.reset({
+        name: customer.name,
+        email: customer.email,
+        phone: customer.phone,
+        address: customer.address ?? "",
+        accessCode: customer.accessCode ?? "",
+      });
     }
-  });
+  }, [customer, form]);
 
-  const updateCustomer = useMutation({
-    mutationFn: async (data: UpdateInput) => {
+  const updateCustomerMutation = useMutation({
+    mutationFn: async (data: UpdateCustomerInput) => {
+      console.log("Updating customer with data:", data);
       const response = await fetch(`/api/customers/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...data,
+          address: data.address || null,
+          accessCode: data.accessCode || null,
+        }),
       });
 
       if (!response.ok) {
-        throw new Error("Failed to update customer");
+        const error = await response.text();
+        throw new Error(error || 'Failed to update customer');
       }
 
       return response.json();
@@ -108,23 +127,46 @@ export default function TenantDetailsPage() {
       queryClient.invalidateQueries({ queryKey: ["/api/customers", id] });
       toast({
         title: "Success",
-        description: "Customer updated successfully",
+        description: "Customer details updated successfully",
       });
       setIsEditing(false);
     },
-    onError: () => {
+    onError: (error: Error) => {
+      console.error("Update failed:", error);
       toast({
         title: "Error",
-        description: "Failed to update customer",
+        description: error.message,
         variant: "destructive",
       });
     },
   });
 
+  const onSubmit = (data: UpdateCustomerInput) => {
+    console.log("Form submitted with data:", data);
+    updateCustomerMutation.mutate(data);
+  };
+
+  // Helper function to safely format dates
+  const formatDate = (dateStr: string | undefined | null): string => {
+    if (!dateStr) return 'N/A';
+    try {
+      return format(new Date(dateStr), 'MM/dd/yyyy');
+    } catch (e) {
+      return 'Invalid date';
+    }
+  };
+
+  const balance = payments?.reduce((total, payment) => {
+    if (payment.status === "pending") {
+      return total + payment.amount;
+    }
+    return total;
+  }, 0) ?? 0;
+
   if (!customer) {
     return (
       <ManagerLayout>
-        <div>Loading...</div>
+        <div className="p-4">Loading...</div>
       </ManagerLayout>
     );
   }
@@ -141,13 +183,15 @@ export default function TenantDetailsPage() {
                 variant="outline"
                 size="sm"
                 onClick={() => {
-                  form.reset({
-                    name: customer.name,
-                    email: customer.email,
-                    phone: customer.phone,
-                    address: customer.address || "",
-                    accessCode: customer.accessCode || "",
-                  });
+                  if (customer) {
+                    form.reset({
+                      name: customer.name,
+                      email: customer.email,
+                      phone: customer.phone,
+                      address: customer.address ?? "",
+                      accessCode: customer.accessCode ?? "",
+                    });
+                  }
                   setIsEditing(true);
                 }}
               >
@@ -203,17 +247,12 @@ export default function TenantDetailsPage() {
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-muted-foreground">Outstanding</span>
-                  <span className="font-medium text-red-600">${(payments?.reduce((total, payment) => {
-                    if (payment.status === "pending") {
-                      return total + payment.amount;
-                    }
-                    return total;
-                  }, 0) ?? 0).toFixed(2)}</span>
+                  <span className="font-medium text-red-600">${balance.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-muted-foreground">Last Payment</span>
                   <span className="text-sm">
-                    {payments?.[0] ? format(new Date(payments[0].createdAt), 'MM/dd/yyyy') : 'N/A'}
+                    {payments?.[0] ? formatDate(payments[0].createdAt) : 'N/A'}
                   </span>
                 </div>
               </div>
@@ -250,7 +289,7 @@ export default function TenantDetailsPage() {
                         <h3 className="text-sm font-medium text-muted-foreground mb-2">Billing</h3>
                         <div className="space-y-1">
                           <div className="text-sm">Monthly Rate: ${booking.monthlyRate}</div>
-                          <div className="text-sm">Next Bill: {format(new Date(booking.nextBillDate), 'MM/dd/yyyy')}</div>
+                          <div className="text-sm">Next Bill: {formatDate(booking.nextBillDate)}</div>
                           <div className="text-sm">Insurance: ${booking.insuranceAmount || '0.00'}</div>
                         </div>
                       </div>
@@ -287,7 +326,7 @@ export default function TenantDetailsPage() {
                 <TableBody>
                   {payments?.map((payment) => (
                     <TableRow key={payment.id}>
-                      <TableCell>{format(new Date(payment.createdAt), 'MM/dd/yyyy')}</TableCell>
+                      <TableCell>{formatDate(payment.createdAt)}</TableCell>
                       <TableCell>Monthly Rent Payment</TableCell>
                       <TableCell>${payment.amount}</TableCell>
                       <TableCell>
@@ -314,7 +353,7 @@ export default function TenantDetailsPage() {
               <div className="space-y-3">
                 <div className="border-l-4 border-primary p-3 bg-muted/50 rounded">
                   <div className="text-sm text-muted-foreground mb-1">
-                    Added by John Doe on {format(new Date(), 'MM/dd/yyyy')}
+                    Added by John Doe on {formatDate(new Date().toISOString())}
                   </div>
                   <p className="text-sm">Called about gate access code reset. Issue resolved.</p>
                 </div>
@@ -325,12 +364,12 @@ export default function TenantDetailsPage() {
 
         {/* Edit Dialog */}
         <Dialog open={isEditing} onOpenChange={setIsEditing}>
-          <DialogContent>
+          <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
               <DialogTitle>Edit Customer Details</DialogTitle>
             </DialogHeader>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit((data) => updateCustomer.mutate(data))} className="space-y-4">
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                 <FormField
                   control={form.control}
                   name="name"
@@ -377,7 +416,7 @@ export default function TenantDetailsPage() {
                     <FormItem>
                       <FormLabel>Address</FormLabel>
                       <FormControl>
-                        <Input {...field} />
+                        <Input {...field} value={field.value || ""} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -390,7 +429,7 @@ export default function TenantDetailsPage() {
                     <FormItem>
                       <FormLabel>Gate Access Code</FormLabel>
                       <FormControl>
-                        <Input {...field} />
+                        <Input {...field} value={field.value || ""} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -406,9 +445,9 @@ export default function TenantDetailsPage() {
                   </Button>
                   <Button
                     type="submit"
-                    disabled={updateCustomer.isPending}
+                    disabled={updateCustomerMutation.isPending}
                   >
-                    {updateCustomer.isPending ? "Saving..." : "Save Changes"}
+                    {updateCustomerMutation.isPending ? 'Saving...' : 'Save Changes'}
                   </Button>
                 </DialogFooter>
               </form>
