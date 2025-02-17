@@ -230,30 +230,32 @@ export default function TenantDetailsPage() {
         <div className="p-4 grid gap-4 md:grid-cols-3">
           {/* Contact Information */}
           <div className="md:col-span-1 space-y-4">
+            {/* Contact Information Section */}
             <div className="bg-white p-4 rounded-lg border">
               <h2 className="text-lg font-semibold mb-4">Contact Information</h2>
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
                   <Mail className="h-4 w-4 text-muted-foreground" />
-                  <div className="text-sm">{customer.email}</div>
+                  <div className="text-sm">{customer?.email}</div>
                 </div>
                 <div className="flex items-center gap-2">
                   <Phone className="h-4 w-4 text-muted-foreground" />
-                  <div className="text-sm">{customer.phone}</div>
+                  <div className="text-sm">{customer?.phone}</div>
                 </div>
                 <div className="flex items-center gap-2">
                   <Home className="h-4 w-4 text-muted-foreground" />
-                  <div className="text-sm">{customer.address || 'Not provided'}</div>
+                  <div className="text-sm">{customer?.address || 'Not provided'}</div>
                 </div>
                 <div className="flex items-center gap-2">
                   <GitFork className="h-4 w-4 text-muted-foreground" />
-                  <div className="text-sm">Gate Code: {customer.accessCode || 'Not set'}</div>
+                  <div className="text-sm">Gate Code: {customer?.accessCode || 'Not set'}</div>
                 </div>
               </div>
             </div>
 
             {/* Balance Summary */}
-            <div className="bg-white p-4 rounded-lg border">
+            {/* Balance Summary Section */}
+            <div className="bg-white p-4 rounded-lg border mt-4">
               <h2 className="text-lg font-semibold mb-4">Balance Summary</h2>
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
