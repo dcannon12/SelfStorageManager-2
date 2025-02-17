@@ -51,13 +51,13 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
-// Create a more lenient update schema
+// Create a more lenient update schema with proper string handling
 const updateCustomerSchema = z.object({
   name: z.string().min(1, "Name is required"),
   email: z.string().email("Invalid email address"),
   phone: z.string().min(1, "Phone number is required"),
-  address: z.string().optional().nullable(),
-  accessCode: z.string().optional().nullable(),
+  address: z.string().optional().or(z.literal('')).or(z.null()),
+  accessCode: z.string().optional().or(z.literal('')).or(z.null()),
 });
 
 type UpdateCustomerInput = z.infer<typeof updateCustomerSchema>;
@@ -111,6 +111,7 @@ export default function TenantDetailsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...data,
+          // Convert empty strings to null
           address: data.address || null,
           accessCode: data.accessCode || null,
         }),
@@ -416,7 +417,7 @@ export default function TenantDetailsPage() {
                     <FormItem>
                       <FormLabel>Address</FormLabel>
                       <FormControl>
-                        <Input {...field} />
+                        <Input {...field} value={field.value ?? ""} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -429,7 +430,7 @@ export default function TenantDetailsPage() {
                     <FormItem>
                       <FormLabel>Gate Access Code</FormLabel>
                       <FormControl>
-                        <Input {...field} />
+                        <Input {...field} value={field.value ?? ""} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
