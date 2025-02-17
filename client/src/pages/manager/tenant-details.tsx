@@ -155,29 +155,6 @@ export default function TenantDetailsPage() {
             </div>
           </div>
 
-          {/* Notes Section */}
-          <div className="bg-gray-100 p-4 rounded-md">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold">Notes</h2>
-              <Button variant="outline" size="sm">Add Note</Button>
-            </div>
-            <div className="space-y-4">
-              <Textarea
-                placeholder="Add a note about this tenant..."
-                className="min-h-[100px]"
-              />
-              <div className="space-y-4">
-                {/* Example notes - will need to be connected to backend */}
-                <div className="border-l-4 border-primary p-4 bg-white rounded">
-                  <div className="text-sm text-muted-foreground mb-2">
-                    Added by John Doe on {format(new Date(), 'MMM d, yyyy')}
-                  </div>
-                  <p>Called about gate access code reset. Issue resolved.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
           {/* Billing History */}
           <div className="bg-gray-100 p-4 rounded-md">
             <h2 className="text-xl font-semibold mb-4">Billing History</h2>
@@ -206,6 +183,29 @@ export default function TenantDetailsPage() {
                   ))}
                 </TableBody>
               </Table>
+            </div>
+          </div>
+
+          {/* Notes Section */}
+          <div className="bg-gray-100 p-4 rounded-md">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold">Notes</h2>
+              <Button variant="outline" size="sm">Add Note</Button>
+            </div>
+            <div className="space-y-4">
+              <Textarea
+                placeholder="Add a note about this tenant..."
+                className="min-h-[100px]"
+              />
+              <div className="space-y-4">
+                {/* Example notes - will need to be connected to backend */}
+                <div className="border-l-4 border-primary p-4 bg-white rounded">
+                  <div className="text-sm text-muted-foreground mb-2">
+                    Added by John Doe on {format(new Date(), 'MMM d, yyyy')}
+                  </div>
+                  <p>Called about gate access code reset. Issue resolved.</p>
+                </div>
+              </div>
             </div>
           </div>
 
