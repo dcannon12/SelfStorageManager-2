@@ -78,62 +78,33 @@ export default function TenantDetailsPage() {
           {/* Customer Information Section */}
           <div className="bg-gray-100 p-4 rounded-md">
             <h2 className="text-xl font-semibold mb-4">Customer Information</h2>
-            <div className="grid grid-cols-2 gap-8">
-              {/* Contact Section */}
-              <div className="space-y-4">
-                <h3 className="font-medium">Contact</h3>
-                <div>
-                  <div className="text-sm text-muted-foreground">Name</div>
-                  <div>{customer.name}</div>
-                </div>
-                <div>
-                  <div className="text-sm text-muted-foreground">Email</div>
-                  <div>{customer.email}</div>
-                </div>
-                <div>
-                  <div className="text-sm text-muted-foreground">Phone</div>
-                  <div>{customer.phone}</div>
-                </div>
-                <div>
-                  <div className="text-sm text-muted-foreground">Cell Phone</div>
-                  <div className="flex items-center gap-2">
-                    <span>{customer.phone}</span>
-                    <Button variant="outline" size="sm">Text Messaging</Button>
-                  </div>
-                </div>
-                <div>
-                  <div className="text-sm text-muted-foreground">Address</div>
-                  <div>{customer.address}</div>
+            <div className="space-y-4">
+              <div>
+                <div className="text-sm text-muted-foreground">Name</div>
+                <div>{customer.name}</div>
+              </div>
+              <div>
+                <div className="text-sm text-muted-foreground">Email</div>
+                <div>{customer.email}</div>
+              </div>
+              <div>
+                <div className="text-sm text-muted-foreground">Phone</div>
+                <div>{customer.phone}</div>
+              </div>
+              <div>
+                <div className="text-sm text-muted-foreground">Cell Phone</div>
+                <div className="flex items-center gap-2">
+                  <span>{customer.phone}</span>
+                  <Button variant="outline" size="sm">Text Messaging</Button>
                 </div>
               </div>
-
-              {/* Account & Access Section */}
-              <div className="space-y-4">
-                <h3 className="font-medium">Account & Access</h3>
-                <div>
-                  <div className="text-sm text-muted-foreground">Login</div>
-                  <div>
-                    <Badge variant="outline">
-                      {customer.accountStatus === 'enabled' ? 'Enabled' : 'Disabled'}
-                    </Badge>
-                  </div>
-                </div>
-                <div>
-                  <div className="text-sm text-muted-foreground">Username</div>
-                  <div>{customer.email}</div>
-                </div>
-                <div>
-                  <div className="text-sm text-muted-foreground">Security question</div>
-                  <div>{customer.securityQuestion || 'Not set'}</div>
-                </div>
-                <div>
-                  <div className="text-sm text-muted-foreground">Security answer</div>
-                  <div>{customer.securityAnswer || 'Not set'}</div>
-                </div>
-                <div>
-                  <div className="text-sm text-muted-foreground">Access Code</div>
-                  <div>{customer.accessCode || 'Not set'}</div>
-                </div>
+              <div>
+                <div className="text-sm text-muted-foreground">Address</div>
+                <div>{customer.address}</div>
+              </div>
+              <div>
+                <div className="text-sm text-muted-foreground">Gate Access Code</div>
+                <div>{customer.accessCode || 'Not set'}</div>
               </div>
             </div>
           </div>
@@ -198,7 +169,6 @@ export default function TenantDetailsPage() {
                 className="min-h-[100px]"
               />
               <div className="space-y-4">
-                {/* Example notes - will need to be connected to backend */}
                 <div className="border-l-4 border-primary p-4 bg-white rounded">
                   <div className="text-sm text-muted-foreground mb-2">
                     Added by John Doe on {format(new Date(), 'MMM d, yyyy')}
@@ -208,7 +178,6 @@ export default function TenantDetailsPage() {
               </div>
             </div>
           </div>
-
         </div>
       </div>
     </ManagerLayout>
