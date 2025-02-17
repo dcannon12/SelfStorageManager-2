@@ -13,6 +13,9 @@ import {
   insertNotificationLogSchema
 } from "@shared/schema";
 import { z } from "zod";
+import { eq } from "drizzle-orm";
+import { storageManagerData } from "@shared/schema";
+import { db } from "./db";
 
 async function seedUnits() {
   const existingUnits = await storage.getUnits();
@@ -313,6 +316,33 @@ export async function registerRoutes(app: Express) {
     }
     const log = await storage.createNotificationLog(result.data);
     res.status(201).json(log);
+  });
+
+  // Add new facility metrics endpoints
+  app.get("/api/facility-metrics", async (req, res) => {
+    try {
+      const metrics = await db.select().from(storageManagerData);
+      res.json(metrics);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch facility metrics" });
+    }
+  });
+
+  app.get("/api/facility-metrics/:id", async (req, res) => {
+    try {
+      const [metrics] = await db
+        .select()
+        .from(storageManagerData)
+        .where(eq(storageManagerData.facilityId, Number(req.params.id)));
+
+      if (!metrics) {
+        return res.status(404).json({ message: "Facility metrics not found" });
+      }
+
+      res.json(metrics);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch facility metrics" });
+    }
   });
 
   const httpServer = createServer(app);
