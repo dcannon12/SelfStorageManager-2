@@ -1,6 +1,6 @@
 import { ManagerLayout } from "@/components/manager-layout";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Customer, Payment, Booking, insertCustomerSchema } from "@shared/schema";
+import { Customer, Payment, Booking } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useParams } from "wouter";
@@ -56,8 +56,8 @@ const updateCustomerSchema = z.object({
   name: z.string().min(1, "Name is required"),
   email: z.string().email("Invalid email address"),
   phone: z.string().min(1, "Phone number is required"),
-  address: z.string().nullable(),
-  accessCode: z.string().nullable(),
+  address: z.string().optional().nullable(),
+  accessCode: z.string().optional().nullable(),
 });
 
 type UpdateCustomerInput = z.infer<typeof updateCustomerSchema>;
@@ -73,8 +73,8 @@ export default function TenantDetailsPage() {
       name: "",
       email: "",
       phone: "",
-      address: null,
-      accessCode: null,
+      address: "",
+      accessCode: "",
     },
   });
 
@@ -97,8 +97,8 @@ export default function TenantDetailsPage() {
         name: customer.name,
         email: customer.email,
         phone: customer.phone,
-        address: customer.address,
-        accessCode: customer.accessCode,
+        address: customer.address ?? "",
+        accessCode: customer.accessCode ?? "",
       });
     }
   }, [customer, form]);
@@ -109,7 +109,11 @@ export default function TenantDetailsPage() {
       const response = await fetch(`/api/customers/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          ...data,
+          address: data.address || null,
+          accessCode: data.accessCode || null,
+        }),
       });
 
       if (!response.ok) {
@@ -373,7 +377,7 @@ export default function TenantDetailsPage() {
                     <FormItem>
                       <FormLabel>Name</FormLabel>
                       <FormControl>
-                        <Input {...field} value={field.value || ''} />
+                        <Input {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -386,7 +390,7 @@ export default function TenantDetailsPage() {
                     <FormItem>
                       <FormLabel>Email</FormLabel>
                       <FormControl>
-                        <Input type="email" {...field} value={field.value || ''} />
+                        <Input type="email" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -399,7 +403,7 @@ export default function TenantDetailsPage() {
                     <FormItem>
                       <FormLabel>Phone</FormLabel>
                       <FormControl>
-                        <Input type="tel" {...field} value={field.value || ''} />
+                        <Input type="tel" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -412,7 +416,7 @@ export default function TenantDetailsPage() {
                     <FormItem>
                       <FormLabel>Address</FormLabel>
                       <FormControl>
-                        <Input {...field} value={field.value || ''} />
+                        <Input {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -425,7 +429,7 @@ export default function TenantDetailsPage() {
                     <FormItem>
                       <FormLabel>Gate Access Code</FormLabel>
                       <FormControl>
-                        <Input {...field} value={field.value || ''} />
+                        <Input {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
