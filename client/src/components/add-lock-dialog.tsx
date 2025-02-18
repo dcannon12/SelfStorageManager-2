@@ -37,7 +37,7 @@ export function AddLockDialog({ isOpen, onClose, onSave }: AddLockDialogProps) {
       serialCode,
       combination,
       status,
-      facility: selectedFacility === 'all' ? '' : selectedFacility.name,
+      facility: selectedFacility === 'all' ? 'All Facilities' : selectedFacility.name,
       unitNumber: '' // Empty for now as it's not in the form
     });
 
@@ -79,12 +79,15 @@ export function AddLockDialog({ isOpen, onClose, onSave }: AddLockDialogProps) {
             <div className="space-y-4">
               <div>
                 <label className="text-base font-medium">Facility</label>
-                <Select disabled value={selectedFacility === 'all' ? '' : selectedFacility.name}>
+                <Select 
+                  disabled 
+                  value={selectedFacility === 'all' ? 'all-facilities' : selectedFacility.name}
+                >
                   <SelectTrigger className="mt-2">
                     <SelectValue placeholder="Select facility" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value={selectedFacility === 'all' ? '' : selectedFacility.name}>
+                    <SelectItem value={selectedFacility === 'all' ? 'all-facilities' : selectedFacility.name}>
                       {selectedFacility === 'all' ? 'All Facilities' : selectedFacility.name}
                     </SelectItem>
                   </SelectContent>
