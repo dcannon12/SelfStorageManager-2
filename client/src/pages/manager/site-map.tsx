@@ -54,7 +54,7 @@ const stats = [
   { count: 3, label: "Overdue", dotColor: "bg-yellow-400" },
 ];
 
-// Updated mock data with 31 units
+// Updated mock data with 31 units and realistic tenant information
 const mockUnits: Unit[][] = [
   // Row 1 (1-10)
   [
@@ -62,50 +62,270 @@ const mockUnits: Unit[][] = [
       number: "1",
       status: "occupied",
       size: "10 x 20",
-      unitBalance: 0,
+      unitBalance: 150,
       customer: {
-        name: "Lorenzo Mccutchen, Jr",
-        cellPhone: "(863) 698-3301",
+        name: "Sarah Anderson",
+        cellPhone: "(407) 555-1234",
         plan: { amount: 155.00, frequency: "Each Month" },
-        totalBalance: 0.00
+        totalBalance: 150.00
       }
     },
-    { number: "2", status: "occupied", size: "10 x 20", unitBalance: 0 },
+    {
+      number: "2",
+      status: "occupied",
+      size: "10 x 20",
+      unitBalance: 0,
+      customer: {
+        name: "Michael Rodriguez",
+        cellPhone: "(407) 555-2345",
+        plan: { amount: 155.00, frequency: "Each Month" },
+        totalBalance: 0
+      }
+    },
     { number: "3", status: "available", size: "10 x 20", unitBalance: 0 },
-    { number: "4", status: "occupied", size: "10 x 20", unitBalance: 50 },
-    { number: "5", status: "occupied", size: "10 x 20", unitBalance: 0 },
+    {
+      number: "4",
+      status: "occupied",
+      size: "10 x 20",
+      unitBalance: 75,
+      customer: {
+        name: "Emily Thompson",
+        cellPhone: "(407) 555-3456",
+        plan: { amount: 155.00, frequency: "Each Month" },
+        totalBalance: 75
+      }
+    },
+    {
+      number: "5",
+      status: "occupied",
+      size: "10 x 20",
+      unitBalance: 0,
+      customer: {
+        name: "David Wilson",
+        cellPhone: "(407) 555-4567",
+        plan: { amount: 155.00, frequency: "Each Month" },
+        totalBalance: 0
+      }
+    },
     { number: "6", status: "maintenance", size: "10 x 20", unitBalance: 0 },
-    { number: "7", status: "occupied", size: "10 x 20", unitBalance: 0 },
+    {
+      number: "7",
+      status: "occupied",
+      size: "10 x 20",
+      unitBalance: 310,
+      customer: {
+        name: "Jennifer Martinez",
+        cellPhone: "(407) 555-5678",
+        plan: { amount: 155.00, frequency: "Each Month" },
+        totalBalance: 310
+      }
+    },
     { number: "8", status: "available", size: "10 x 20", unitBalance: 0 },
-    { number: "9", status: "occupied", size: "10 x 20", unitBalance: 0 },
-    { number: "10", status: "occupied", size: "10 x 20", unitBalance: 0 },
+    {
+      number: "9",
+      status: "occupied",
+      size: "10 x 20",
+      unitBalance: 0,
+      customer: {
+        name: "Robert Taylor",
+        cellPhone: "(407) 555-6789",
+        plan: { amount: 155.00, frequency: "Each Month" },
+        totalBalance: 0
+      }
+    },
+    {
+      number: "10",
+      status: "occupied",
+      size: "10 x 20",
+      unitBalance: 155,
+      customer: {
+        name: "Lisa Johnson",
+        cellPhone: "(407) 555-7890",
+        plan: { amount: 155.00, frequency: "Each Month" },
+        totalBalance: 155
+      }
+    },
   ],
   // Row 2 (11-20)
   [
     { number: "11", status: "available", size: "10 x 20", unitBalance: 0 },
-    { number: "12", status: "occupied", size: "10 x 20", unitBalance: 0 },
-    { number: "13", status: "occupied", size: "10 x 20", unitBalance: 0 },
+    {
+      number: "12",
+      status: "occupied",
+      size: "10 x 20",
+      unitBalance: 0,
+      customer: {
+        name: "Christopher Lee",
+        cellPhone: "(407) 555-8901",
+        plan: { amount: 155.00, frequency: "Each Month" },
+        totalBalance: 0
+      }
+    },
+    {
+      number: "13",
+      status: "occupied",
+      size: "10 x 20",
+      unitBalance: 465,
+      customer: {
+        name: "Amanda White",
+        cellPhone: "(407) 555-9012",
+        plan: { amount: 155.00, frequency: "Each Month" },
+        totalBalance: 465
+      }
+    },
     { number: "14", status: "available", size: "10 x 20", unitBalance: 0 },
-    { number: "15", status: "occupied", size: "10 x 20", unitBalance: 0 },
+    {
+      number: "15",
+      status: "occupied",
+      size: "10 x 20",
+      unitBalance: 0,
+      customer: {
+        name: "Kevin Brown",
+        cellPhone: "(407) 555-0123",
+        plan: { amount: 155.00, frequency: "Each Month" },
+        totalBalance: 0
+      }
+    },
     { number: "16", status: "available", size: "10 x 20", unitBalance: 0 },
-    { number: "17", status: "occupied", size: "10 x 20", unitBalance: 0 },
-    { number: "18", status: "occupied", size: "10 x 20", unitBalance: 0 },
+    {
+      number: "17",
+      status: "occupied",
+      size: "10 x 20",
+      unitBalance: 155,
+      customer: {
+        name: "Michelle Davis",
+        cellPhone: "(407) 555-1234",
+        plan: { amount: 155.00, frequency: "Each Month" },
+        totalBalance: 155
+      }
+    },
+    {
+      number: "18",
+      status: "occupied",
+      size: "10 x 20",
+      unitBalance: 0,
+      customer: {
+        name: "Daniel Garcia",
+        cellPhone: "(407) 555-2345",
+        plan: { amount: 155.00, frequency: "Each Month" },
+        totalBalance: 0
+      }
+    },
     { number: "19", status: "available", size: "10 x 20", unitBalance: 0 },
-    { number: "20", status: "occupied", size: "10 x 20", unitBalance: 0 },
+    {
+      number: "20",
+      status: "occupied",
+      size: "10 x 20",
+      unitBalance: 310,
+      customer: {
+        name: "Rachel Miller",
+        cellPhone: "(407) 555-3456",
+        plan: { amount: 155.00, frequency: "Each Month" },
+        totalBalance: 310
+      }
+    },
   ],
   // Row 3 (21-31)
   [
     { number: "21", status: "available", size: "10 x 20", unitBalance: 0 },
-    { number: "22", status: "occupied", size: "10 x 20", unitBalance: 0 },
+    {
+      number: "22",
+      status: "occupied",
+      size: "10 x 20",
+      unitBalance: 0,
+      customer: {
+        name: "Thomas Anderson",
+        cellPhone: "(407) 555-4567",
+        plan: { amount: 155.00, frequency: "Each Month" },
+        totalBalance: 0
+      }
+    },
     { number: "23", status: "maintenance", size: "10 x 20", unitBalance: 0 },
     { number: "24", status: "available", size: "10 x 20", unitBalance: 0 },
-    { number: "25", status: "occupied", size: "10 x 20", unitBalance: 0 },
-    { number: "26", status: "occupied", size: "10 x 20", unitBalance: 0 },
-    { number: "27", status: "occupied", size: "10 x 20", unitBalance: 0 },
-    { number: "28", status: "occupied", size: "10 x 20", unitBalance: 0 },
-    { number: "29", status: "occupied", size: "10 x 20", unitBalance: 0 },
-    { number: "30", status: "occupied", size: "10 x 20", unitBalance: 0 },
-    { number: "31", status: "occupied", size: "10 x 20", unitBalance: 0 },
+    {
+      number: "25",
+      status: "occupied",
+      size: "10 x 20",
+      unitBalance: 155,
+      customer: {
+        name: "Jessica Martinez",
+        cellPhone: "(407) 555-5678",
+        plan: { amount: 155.00, frequency: "Each Month" },
+        totalBalance: 155
+      }
+    },
+    {
+      number: "26",
+      status: "occupied",
+      size: "10 x 20",
+      unitBalance: 0,
+      customer: {
+        name: "William Turner",
+        cellPhone: "(407) 555-6789",
+        plan: { amount: 155.00, frequency: "Each Month" },
+        totalBalance: 0
+      }
+    },
+    {
+      number: "27",
+      status: "occupied",
+      size: "10 x 20",
+      unitBalance: 465,
+      customer: {
+        name: "Nicole Parker",
+        cellPhone: "(407) 555-7890",
+        plan: { amount: 155.00, frequency: "Each Month" },
+        totalBalance: 465
+      }
+    },
+    {
+      number: "28",
+      status: "occupied",
+      size: "10 x 20",
+      unitBalance: 0,
+      customer: {
+        name: "James Wilson",
+        cellPhone: "(407) 555-8901",
+        plan: { amount: 155.00, frequency: "Each Month" },
+        totalBalance: 0
+      }
+    },
+    {
+      number: "29",
+      status: "occupied",
+      size: "10 x 20",
+      unitBalance: 155,
+      customer: {
+        name: "Patricia Harris",
+        cellPhone: "(407) 555-9012",
+        plan: { amount: 155.00, frequency: "Each Month" },
+        totalBalance: 155
+      }
+    },
+    {
+      number: "30",
+      status: "occupied",
+      size: "10 x 20",
+      unitBalance: 0,
+      customer: {
+        name: "Steven Clark",
+        cellPhone: "(407) 555-0123",
+        plan: { amount: 155.00, frequency: "Each Month" },
+        totalBalance: 0
+      }
+    },
+    {
+      number: "31",
+      status: "occupied",
+      size: "10 x 20",
+      unitBalance: 310,
+      customer: {
+        name: "Maria Rodriguez",
+        cellPhone: "(407) 555-1234",
+        plan: { amount: 155.00, frequency: "Each Month" },
+        totalBalance: 310
+      }
+    },
   ],
 ];
 
