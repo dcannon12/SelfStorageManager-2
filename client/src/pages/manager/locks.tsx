@@ -12,6 +12,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Download, Import, MoreHorizontal, Plus } from "lucide-react";
 import { useFacility } from "@/lib/facility-context";
+import { AddLockDialog } from "@/components/add-lock-dialog";
+import { useState } from "react";
 
 type LockStatus = 
   | "Overlocked"
@@ -81,6 +83,7 @@ const getStatusColor = (status: LockStatus) => {
 
 export default function LocksPage() {
   const { selectedFacility } = useFacility();
+  const [isAddLockOpen, setIsAddLockOpen] = useState(false);
 
   return (
     <ManagerLayout>
@@ -92,7 +95,7 @@ export default function LocksPage() {
               <Import className="h-4 w-4 mr-2" />
               Import
             </Button>
-            <Button>
+            <Button onClick={() => setIsAddLockOpen(true)}>
               <Plus className="h-4 w-4 mr-2" />
               Add lock
             </Button>
@@ -151,6 +154,11 @@ export default function LocksPage() {
             </TableBody>
           </Table>
         </div>
+
+        <AddLockDialog 
+          isOpen={isAddLockOpen}
+          onClose={() => setIsAddLockOpen(false)}
+        />
       </div>
     </ManagerLayout>
   );
