@@ -15,7 +15,7 @@ import { useFacility } from "@/lib/facility-context";
 import { AddLockDialog } from "@/components/add-lock-dialog";
 import { useState } from "react";
 
-type LockStatus = 
+export type LockStatus = 
   | "Overlocked"
   | "On vacant unit"
   | "Locked"
@@ -23,7 +23,7 @@ type LockStatus =
   | "Available"
   | "Locked for auction";
 
-interface Lock {
+export interface Lock {
   serialCode: string;
   combination: string;
   status: LockStatus;
@@ -34,7 +34,7 @@ interface Lock {
 }
 
 // Mock data for demonstration
-const mockLocks: Lock[] = [
+const initialLocks: Lock[] = [
   {
     serialCode: "L364N3LL",
     combination: "4865",
@@ -84,6 +84,17 @@ const getStatusColor = (status: LockStatus) => {
 export default function LocksPage() {
   const { selectedFacility } = useFacility();
   const [isAddLockOpen, setIsAddLockOpen] = useState(false);
+  const [locks, setLocks] = useState<Lock[]>(initialLocks);
+
+  const handleAddLock = (newLock: Omit<Lock, "lastUpdated" | "updatedBy">) => {
+    const lock: Lock = {
+      ...newLock,
+      lastUpdated: "Just now",
+      updatedBy: "Current User" // This would come from auth context in a real app
+    };
+    setLocks(prevLocks => [...prevLocks, lock]);
+    setIsAddLockOpen(false);
+  };
 
   return (
     <ManagerLayout>
@@ -131,12 +142,12 @@ export default function LocksPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {mockLocks.map((lock) => (
+              {locks.map((lock) => (
                 <TableRow key={lock.serialCode}>
                   <TableCell className="font-medium">{lock.serialCode}</TableCell>
                   <TableCell>{lock.combination}</TableCell>
                   <TableCell>
-                    <Badge variant={getStatusColor(lock.status)}>
+                    <Badge variant={getStatusColor(lock.status) as any}>
                       {lock.status}
                     </Badge>
                   </TableCell>
@@ -158,6 +169,7 @@ export default function LocksPage() {
         <AddLockDialog 
           isOpen={isAddLockOpen}
           onClose={() => setIsAddLockOpen(false)}
+          onSave={handleAddLock}
         />
       </div>
     </ManagerLayout>
