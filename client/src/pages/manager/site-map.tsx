@@ -26,6 +26,15 @@ const getStatusColor = (status: Unit["status"]) => {
   }
 };
 
+// Mock data for the statistics
+const stats = [
+  { count: 11, label: "Available", dotColor: "bg-emerald-400" },
+  { count: 159, label: "Occupied", dotColor: "bg-blue-400" },
+  { count: 10, label: "Overlocked", dotColor: "bg-red-400" },
+  { count: 9, label: "Unrentable", dotColor: "bg-gray-400" },
+  { count: 20, label: "Overdue", dotColor: "bg-yellow-400" },
+];
+
 // Mock data - this would come from your API in a real app
 const mockUnits: Unit[] = [
   { number: "129", status: "occupied" },
@@ -91,6 +100,20 @@ export default function SiteMapPage() {
               </Button>
             )}
           </div>
+        </div>
+
+        {/* Unit Statistics */}
+        <div className="flex gap-4 mb-6 flex-wrap">
+          {stats.map((stat) => (
+            <div
+              key={stat.label}
+              className="flex items-center gap-2 px-4 py-2 bg-background rounded-full border"
+            >
+              <div className={`w-2 h-2 rounded-full ${stat.dotColor}`} />
+              <span className="font-medium">{stat.count}</span>
+              <span className="text-muted-foreground">{stat.label}</span>
+            </div>
+          ))}
         </div>
 
         <Card className="p-6">
