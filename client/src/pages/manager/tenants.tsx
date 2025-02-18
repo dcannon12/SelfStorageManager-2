@@ -54,7 +54,6 @@ const mockTenants: Customer[] = [
     balance: 75,
     status: "overdue"
   },
-  // Add more tenants to match site map data
   {
     id: "5",
     name: "David Wilson",
@@ -72,14 +71,58 @@ const mockTenants: Customer[] = [
     unitNumber: "7",
     balance: 310,
     status: "delinquent"
+  },
+  {
+    id: "9",
+    name: "Robert Taylor",
+    email: "robert.t@email.com",
+    phone: "(407) 555-6789",
+    unitNumber: "9",
+    balance: 0,
+    status: "current"
+  },
+  {
+    id: "10",
+    name: "Lisa Johnson",
+    email: "lisa.j@email.com",
+    phone: "(407) 555-7890",
+    unitNumber: "10",
+    balance: 155,
+    status: "overdue"
+  },
+  {
+    id: "12",
+    name: "Christopher Lee",
+    email: "chris.lee@email.com",
+    phone: "(407) 555-8901",
+    unitNumber: "12",
+    balance: 0,
+    status: "current"
+  },
+  {
+    id: "13",
+    name: "Amanda White",
+    email: "amanda.w@email.com",
+    phone: "(407) 555-9012",
+    unitNumber: "13",
+    balance: 465,
+    status: "delinquent"
+  },
+  {
+    id: "15",
+    name: "Kevin Brown",
+    email: "kevin.b@email.com",
+    phone: "(407) 555-0123",
+    unitNumber: "15",
+    balance: 0,
+    status: "current"
   }
-  // ... continue with all occupied units
 ];
 
 const getStatusColor = (status: Customer["status"]) => {
   switch (status) {
     case "current":
-      return "success";
+      return "default";
     case "overdue":
       return "warning";
     case "delinquent":
