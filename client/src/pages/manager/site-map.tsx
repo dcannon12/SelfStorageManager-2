@@ -47,19 +47,19 @@ const getStatusColor = (status: Unit["status"]) => {
 
 // Mock data for the statistics
 const stats = [
-  { count: 11, label: "Available", dotColor: "bg-emerald-400" },
-  { count: 159, label: "Occupied", dotColor: "bg-blue-400" },
-  { count: 10, label: "Overlocked", dotColor: "bg-red-400" },
-  { count: 9, label: "Unrentable", dotColor: "bg-gray-400" },
-  { count: 20, label: "Overdue", dotColor: "bg-yellow-400" },
+  { count: 8, label: "Available", dotColor: "bg-emerald-400" },
+  { count: 15, label: "Occupied", dotColor: "bg-blue-400" },
+  { count: 3, label: "Overlocked", dotColor: "bg-red-400" },
+  { count: 2, label: "Unrentable", dotColor: "bg-gray-400" },
+  { count: 3, label: "Overdue", dotColor: "bg-yellow-400" },
 ];
 
-// Updated mock data with customer information
+// Updated mock data with 31 units
 const mockUnits: Unit[][] = [
-  // Top row (191-200)
+  // Row 1 (1-10)
   [
     {
-      number: "191",
+      number: "1",
       status: "occupied",
       size: "10 x 20",
       unitBalance: 0,
@@ -70,42 +70,42 @@ const mockUnits: Unit[][] = [
         totalBalance: 0.00
       }
     },
-    { number: "192", status: "maintenance", size: "10 x 20", unitBalance: 0 },
-    { number: "193", status: "occupied", size: "10 x 20", unitBalance: 100, customer: { name: "Jane Doe", cellPhone: "555-1234", plan: { amount: 100, frequency: "Monthly" }, totalBalance: 100 } },
-    { number: "194", status: "available", size: "10 x 20", unitBalance: 0 },
-    { number: "195", status: "occupied", size: "10 x 20", unitBalance: 50, customer: { name: "John Smith", cellPhone: "555-5678", plan: { amount: 50, frequency: "Monthly" }, totalBalance: 50 } },
-    { number: "196", status: "occupied", size: "10 x 20", unitBalance: 200, customer: { name: "Alice Johnson", cellPhone: "555-9012", plan: { amount: 200, frequency: "Monthly" }, totalBalance: 200 } },
-    { number: "197", status: "occupied", size: "10 x 20", unitBalance: 0, customer: { name: "Bob Williams", cellPhone: "555-3456", plan: { amount: 0, frequency: "Monthly" }, totalBalance: 0 } },
-    { number: "198", status: "parking", size: "10 x 20", unitBalance: 0 },
-    { number: "199", status: "occupied", size: "10 x 20", unitBalance: 0, customer: { name: "Charlie Brown", cellPhone: "555-7890", plan: { amount: 0, frequency: "Monthly" }, totalBalance: 0 } },
-    { number: "200", status: "occupied", size: "10 x 20", unitBalance: 0, customer: { name: "David Lee", cellPhone: "555-2345", plan: { amount: 0, frequency: "Monthly" }, totalBalance: 0 } },
+    { number: "2", status: "occupied", size: "10 x 20", unitBalance: 0 },
+    { number: "3", status: "available", size: "10 x 20", unitBalance: 0 },
+    { number: "4", status: "occupied", size: "10 x 20", unitBalance: 50 },
+    { number: "5", status: "occupied", size: "10 x 20", unitBalance: 0 },
+    { number: "6", status: "maintenance", size: "10 x 20", unitBalance: 0 },
+    { number: "7", status: "occupied", size: "10 x 20", unitBalance: 0 },
+    { number: "8", status: "available", size: "10 x 20", unitBalance: 0 },
+    { number: "9", status: "occupied", size: "10 x 20", unitBalance: 0 },
+    { number: "10", status: "occupied", size: "10 x 20", unitBalance: 0 },
   ],
-  // Middle row (180-190)
+  // Row 2 (11-20)
   [
-    { number: "190", status: "occupied", size: "10 x 20", unitBalance: 0 },
-    { number: "189", status: "occupied", size: "10 x 20", unitBalance: 0 },
-    { number: "188", status: "occupied", size: "10 x 20", unitBalance: 0 },
-    { number: "187", status: "occupied", size: "10 x 20", unitBalance: 0 },
-    { number: "186", status: "occupied", size: "10 x 20", unitBalance: 0 },
-    { number: "185", status: "occupied", size: "10 x 20", unitBalance: 0 },
-    { number: "184", status: "available", size: "10 x 20", unitBalance: 0 },
-    { number: "183", status: "available", size: "10 x 20", unitBalance: 0 },
-    { number: "182", status: "available", size: "10 x 20", unitBalance: 0 },
-    { number: "181", status: "available", size: "10 x 20", unitBalance: 0 },
+    { number: "11", status: "available", size: "10 x 20", unitBalance: 0 },
+    { number: "12", status: "occupied", size: "10 x 20", unitBalance: 0 },
+    { number: "13", status: "occupied", size: "10 x 20", unitBalance: 0 },
+    { number: "14", status: "available", size: "10 x 20", unitBalance: 0 },
+    { number: "15", status: "occupied", size: "10 x 20", unitBalance: 0 },
+    { number: "16", status: "available", size: "10 x 20", unitBalance: 0 },
+    { number: "17", status: "occupied", size: "10 x 20", unitBalance: 0 },
+    { number: "18", status: "occupied", size: "10 x 20", unitBalance: 0 },
+    { number: "19", status: "available", size: "10 x 20", unitBalance: 0 },
+    { number: "20", status: "occupied", size: "10 x 20", unitBalance: 0 },
   ],
-  // Bottom row (169-179)
+  // Row 3 (21-31)
   [
-    { number: "169", status: "occupied", size: "10 x 20", unitBalance: 0 },
-    { number: "170", status: "occupied", size: "10 x 20", unitBalance: 0 },
-    { number: "171", status: "occupied", size: "10 x 20", unitBalance: 0 },
-    { number: "172", status: "occupied", size: "10 x 20", unitBalance: 0 },
-    { number: "173", status: "occupied", size: "10 x 20", unitBalance: 0 },
-    { number: "174", status: "occupied", size: "10 x 20", unitBalance: 0 },
-    { number: "175", status: "parking", size: "10 x 20", unitBalance: 0 },
-    { number: "176", status: "available", size: "10 x 20", unitBalance: 0 },
-    { number: "177", status: "available", size: "10 x 20", unitBalance: 0 },
-    { number: "178", status: "available", size: "10 x 20", unitBalance: 0 },
-    { number: "179", status: "available", size: "10 x 20", unitBalance: 0 },
+    { number: "21", status: "available", size: "10 x 20", unitBalance: 0 },
+    { number: "22", status: "occupied", size: "10 x 20", unitBalance: 0 },
+    { number: "23", status: "maintenance", size: "10 x 20", unitBalance: 0 },
+    { number: "24", status: "available", size: "10 x 20", unitBalance: 0 },
+    { number: "25", status: "occupied", size: "10 x 20", unitBalance: 0 },
+    { number: "26", status: "occupied", size: "10 x 20", unitBalance: 0 },
+    { number: "27", status: "occupied", size: "10 x 20", unitBalance: 0 },
+    { number: "28", status: "occupied", size: "10 x 20", unitBalance: 0 },
+    { number: "29", status: "occupied", size: "10 x 20", unitBalance: 0 },
+    { number: "30", status: "occupied", size: "10 x 20", unitBalance: 0 },
+    { number: "31", status: "occupied", size: "10 x 20", unitBalance: 0 },
   ],
 ];
 
@@ -164,7 +164,8 @@ function UnitCell({ unit }: { unit: Unit }) {
                 <div className="flex justify-between">
                   <span>Plan:</span>
                   <span className="font-medium">
-                    ${unit.customer.plan.amount.toFixed(2)} {unit.customer.plan.frequency}
+                    ${unit.customer.plan.amount.toFixed(2)}{" "}
+                    {unit.customer.plan.frequency}
                   </span>
                 </div>
                 <div className="flex justify-between">
