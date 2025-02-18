@@ -22,7 +22,7 @@ const getStatusColor = (status: Unit["status"]) => {
     case "parking":
       return "bg-orange-100 hover:bg-orange-200";
     default:
-      return ""; // Handle unknown statuses
+      return "";
   }
 };
 
@@ -35,19 +35,48 @@ const stats = [
   { count: 20, label: "Overdue", dotColor: "bg-yellow-400" },
 ];
 
-// Mock data - this would come from your API in a real app
-const mockUnits: Unit[] = [
-  { number: "129", status: "occupied" },
-  { number: "128", status: "occupied" },
-  { number: "127", status: "available" },
-  { number: "126", status: "available" },
-  { number: "125", status: "available" },
-  { number: "124", status: "available" },
-  { number: "123", status: "occupied" },
-  { number: "122", status: "available" },
-  { number: "121", status: "occupied" },
-  { number: "120", status: "occupied" },
-  // Add more units as needed
+// Updated mock data to match the screenshot layout
+const mockUnits: Unit[][] = [
+  // Top row (191-200)
+  [
+    { number: "191", status: "occupied" },
+    { number: "192", status: "maintenance" },
+    { number: "193", status: "occupied" },
+    { number: "194", status: "available" },
+    { number: "195", status: "occupied" },
+    { number: "196", status: "occupied" },
+    { number: "197", status: "occupied" },
+    { number: "198", status: "parking" },
+    { number: "199", status: "occupied" },
+    { number: "200", status: "occupied" },
+  ],
+  // Middle row (180-190)
+  [
+    { number: "190", status: "occupied" },
+    { number: "189", status: "occupied" },
+    { number: "188", status: "occupied" },
+    { number: "187", status: "occupied" },
+    { number: "186", status: "occupied" },
+    { number: "185", status: "occupied" },
+    { number: "184", status: "available" },
+    { number: "183", status: "available" },
+    { number: "182", status: "available" },
+    { number: "181", status: "available" },
+  ],
+  // Bottom row (169-179)
+  [
+    { number: "169", status: "occupied" },
+    { number: "170", status: "occupied" },
+    { number: "171", status: "occupied" },
+    { number: "172", status: "occupied" },
+    { number: "173", status: "occupied" },
+    { number: "174", status: "occupied" },
+    { number: "175", status: "parking" },
+    { number: "176", status: "available" },
+    { number: "177", status: "available" },
+    { number: "178", status: "available" },
+    { number: "179", status: "available" },
+  ],
 ];
 
 function UnitCell({ unit }: { unit: Unit }) {
@@ -117,14 +146,19 @@ export default function SiteMapPage() {
         </div>
 
         <Card className="p-6">
-          <div className="aspect-[2/1] bg-accent/10 rounded-lg p-4">
-            <div 
-              className="grid grid-cols-10 gap-2 h-full"
-            >
-              {mockUnits.map((unit, index) => (
-                <UnitCell key={unit.number} unit={unit} />
-              ))}
-            </div>
+          <div className="space-y-4 bg-accent/10 rounded-lg p-4">
+            {mockUnits.map((row, rowIndex) => (
+              <div 
+                key={rowIndex}
+                className="grid grid-cols-10 gap-2"
+              >
+                {row.map((unit) => (
+                  <div key={unit.number} className="col-span-1">
+                    <UnitCell unit={unit} />
+                  </div>
+                ))}
+              </div>
+            ))}
           </div>
         </Card>
       </div>
