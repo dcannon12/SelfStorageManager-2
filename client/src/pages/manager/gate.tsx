@@ -9,10 +9,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Settings, History, GitFork } from "lucide-react";
+import { Settings, History, GitFork, Lock } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
+import { useState } from "react";
+import { Input } from "@/components/ui/input";
 
 export default function GatePage() {
   // Temporary mock data until we add the schema and API
@@ -29,6 +31,9 @@ export default function GatePage() {
     allowManagerOverride: true,
   };
 
+  const [gateName, setGateName] = useState("Fort Meade");
+  const [isOpen, setIsOpen] = useState(false);
+
   return (
     <ManagerLayout>
       <div className="p-8">
@@ -36,13 +41,80 @@ export default function GatePage() {
           <div className="flex items-center gap-2">
             <GitFork className="h-6 w-6" />
             <div>
-              <h1 className="text-3xl font-bold">Gate Management</h1>
+              <h1 className="text-3xl font-bold">Gate Access Control</h1>
               <p className="text-muted-foreground">
                 Monitor gate access and manage settings
               </p>
             </div>
           </div>
         </div>
+
+        {/* SMS Access Instructions */}
+        <Card className="mb-6">
+          <CardContent className="pt-6">
+            <p className="text-muted-foreground mb-2">
+              Active customers with a recognized phone number can open the gate by texting "open" to
+            </p>
+            <p className="text-lg font-semibold text-primary">(863) 485-6790</p>
+            <p className="text-sm text-muted-foreground mt-4">
+              The selected primary gate can be accessed by texting "open" to the Text-to-Open number. 
+              All other gates require the Access Name to be specified (e.g. "open entry").
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Gate Control */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Gate Control</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <div className="text-sm font-medium">Gate</div>
+                <div className="col-span-3">
+                  <Input 
+                    value={gateName}
+                    onChange={(e) => setGateName(e.target.value)}
+                    placeholder="Enter gate name"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <div className="text-sm font-medium">Access Name</div>
+                <div className="col-span-3 flex items-center gap-4">
+                  <Input 
+                    value={gateName}
+                    onChange={(e) => setGateName(e.target.value)}
+                    placeholder="Gate access name"
+                  />
+                  <Button 
+                    className="w-24"
+                    onClick={() => setIsOpen(true)}
+                  >
+                    Open
+                  </Button>
+                  <Button 
+                    className="w-24"
+                    variant="secondary"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Close
+                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Lock className="h-4 w-4" />
+                    <span className="text-sm font-medium">
+                      {isOpen ? "Open" : "Closed"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex justify-end">
+                <Button>Save</Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         <div className="grid gap-6 md:grid-cols-2">
           {/* Gate Settings */}
