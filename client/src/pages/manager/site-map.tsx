@@ -9,6 +9,7 @@ import {
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
 import { Badge } from "@/components/ui/badge";
+import { useLocation } from "wouter";
 
 interface Customer {
   name: string;
@@ -330,6 +331,15 @@ const mockUnits: Unit[][] = [
 ];
 
 function UnitCell({ unit }: { unit: Unit }) {
+  const [, navigate] = useLocation();
+
+  const handleClick = () => {
+    if (unit.customer) {
+      // Navigate to tenant details using the same route as tenants page
+      navigate(`/manager/tenant/${unit.number}`);
+    }
+  };
+
   return (
     <HoverCard>
       <HoverCardTrigger>
@@ -338,7 +348,9 @@ function UnitCell({ unit }: { unit: Unit }) {
             p-4 border rounded-md cursor-pointer transition-all
             ${getStatusColor(unit.status)}
             flex items-center justify-center
+            ${unit.customer ? 'hover:scale-105' : ''}
           `}
+          onClick={handleClick}
         >
           <span className="text-lg font-bold">{unit.number}</span>
         </div>
