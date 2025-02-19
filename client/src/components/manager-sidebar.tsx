@@ -13,7 +13,8 @@ import {
   MessageSquare,
   Bell,
   GitFork,
-  ClipboardCheck
+  ClipboardCheck,
+  Settings
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -34,7 +35,8 @@ export function ManagerSidebar() {
     { href: "/manager/locks", icon: Key, label: "Locks" },
     { href: "/manager/gate", icon: GitFork, label: "Gate" },
     { href: "/manager/messaging", icon: MessageSquare, label: "Messages" },
-    { href: "/manager/notifications", icon: Bell, label: "Notifications" }
+    { href: "/manager/notifications", icon: Bell, label: "Notifications" },
+    { href: "/manager/settings", icon: Settings, label: "Settings" }
   ];
 
   return (

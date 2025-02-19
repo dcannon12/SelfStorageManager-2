@@ -21,6 +21,7 @@ import ManagerGate from "@/pages/manager/gate";
 import NotFound from "@/pages/not-found";
 import ManagerNotifications from "@/pages/manager/notifications";
 import WalkthroughPage from "@/pages/manager/walkthrough";
+import SettingsPage from "@/pages/manager/settings";
 
 function Router() {
   return (
@@ -45,6 +46,7 @@ function Router() {
       <Route path="/manager/messaging" component={ManagerMessaging} />
       <Route path="/manager/tenant/:id" component={TenantDetails} />
       <Route path="/manager/notifications" component={ManagerNotifications} />
+      <Route path="/manager/settings" component={SettingsPage} />
       <Route component={NotFound} />
     </Switch>
   );
