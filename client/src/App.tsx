@@ -20,6 +20,7 @@ import TenantDetails from "@/pages/manager/tenant-details";
 import ManagerGate from "@/pages/manager/gate";
 import NotFound from "@/pages/not-found";
 import ManagerNotifications from "@/pages/manager/notifications";
+import WalkthroughPage from "@/pages/manager/walkthrough";
 
 function Router() {
   return (
@@ -37,6 +38,7 @@ function Router() {
       <Route path="/manager/payments" component={ManagerPayments} />
       <Route path="/manager/collections" component={ManagerCollections} />
       <Route path="/manager/site-map" component={ManagerSiteMap} />
+      <Route path="/manager/walkthrough" component={WalkthroughPage} />
       <Route path="/manager/reports" component={ManagerReports} />
       <Route path="/manager/locks" component={ManagerLocks} />
       <Route path="/manager/gate" component={ManagerGate} />
