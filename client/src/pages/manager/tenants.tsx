@@ -14,138 +14,21 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
-
-interface Customer {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  unitNumber: string;
-  balance: number;
-  status: "current" | "overdue" | "delinquent";
-}
-
-// Mock data matching our site map tenants
-const mockTenants: Customer[] = [
-  {
-    id: "1",
-    name: "Sarah Anderson",
-    email: "sarah.anderson@email.com",
-    phone: "(407) 555-1234",
-    unitNumber: "1",
-    balance: 150.00,
-    status: "overdue"
-  },
-  {
-    id: "2",
-    name: "Michael Rodriguez",
-    email: "michael.r@email.com",
-    phone: "(407) 555-2345",
-    unitNumber: "2",
-    balance: 0,
-    status: "current"
-  },
-  {
-    id: "4",
-    name: "Emily Thompson",
-    email: "emily.t@email.com",
-    phone: "(407) 555-3456",
-    unitNumber: "4",
-    balance: 75,
-    status: "overdue"
-  },
-  {
-    id: "5",
-    name: "David Wilson",
-    email: "david.w@email.com",
-    phone: "(407) 555-4567",
-    unitNumber: "5",
-    balance: 0,
-    status: "current"
-  },
-  {
-    id: "7",
-    name: "Jennifer Martinez",
-    email: "jennifer.m@email.com",
-    phone: "(407) 555-5678",
-    unitNumber: "7",
-    balance: 310,
-    status: "delinquent"
-  },
-  {
-    id: "9",
-    name: "Robert Taylor",
-    email: "robert.t@email.com",
-    phone: "(407) 555-6789",
-    unitNumber: "9",
-    balance: 0,
-    status: "current"
-  },
-  {
-    id: "10",
-    name: "Lisa Johnson",
-    email: "lisa.j@email.com",
-    phone: "(407) 555-7890",
-    unitNumber: "10",
-    balance: 155,
-    status: "overdue"
-  },
-  {
-    id: "12",
-    name: "Christopher Lee",
-    email: "chris.lee@email.com",
-    phone: "(407) 555-8901",
-    unitNumber: "12",
-    balance: 0,
-    status: "current"
-  },
-  {
-    id: "13",
-    name: "Amanda White",
-    email: "amanda.w@email.com",
-    phone: "(407) 555-9012",
-    unitNumber: "13",
-    balance: 465,
-    status: "delinquent"
-  },
-  {
-    id: "15",
-    name: "Kevin Brown",
-    email: "kevin.b@email.com",
-    phone: "(407) 555-0123",
-    unitNumber: "15",
-    balance: 0,
-    status: "current"
-  }
-];
-
-const getStatusColor = (status: Customer["status"]) => {
-  switch (status) {
-    case "current":
-      return "default";
-    case "overdue":
-      return "warning";
-    case "delinquent":
-      return "destructive";
-    default:
-      return "default";
-  }
-};
+import { Customer } from "@shared/schema";
+import { useQuery } from "@tanstack/react-query";
 
 export default function TenantsPage() {
   const [, navigate] = useLocation();
   const [searchTerm, setSearchTerm] = useState("");
-  const [filteredTenants, setFilteredTenants] = useState(mockTenants);
 
-  const handleSearch = (value: string) => {
-    setSearchTerm(value);
-    const filtered = mockTenants.filter(tenant => 
-      tenant.name.toLowerCase().includes(value.toLowerCase()) ||
-      tenant.email.toLowerCase().includes(value.toLowerCase()) ||
-      tenant.unitNumber.includes(value)
-    );
-    setFilteredTenants(filtered);
-  };
+  const { data: tenants, isLoading } = useQuery<Customer[]>({
+    queryKey: ["/api/customers"],
+  });
+
+  const filteredTenants = tenants?.filter(tenant => 
+    tenant.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    tenant.email.toLowerCase().includes(searchTerm.toLowerCase())
+  ) ?? [];
 
   return (
     <ManagerLayout>
@@ -162,9 +45,9 @@ export default function TenantsPage() {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
               className="pl-9"
-              placeholder="Search by name, email or unit number"
+              placeholder="Search by name or email"
               value={searchTerm}
-              onChange={(e) => handleSearch(e.target.value)}
+              onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
           <Button variant="outline">Export</Button>
@@ -174,33 +57,49 @@ export default function TenantsPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Unit</TableHead>
-                <TableHead className="w-[200px]">Name</TableHead>
+                <TableHead>Name</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Phone</TableHead>
-                <TableHead>Balance</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead>Billing Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredTenants.map((tenant) => (
-                <TableRow 
-                  key={tenant.id}
-                  className="cursor-pointer hover:bg-muted/50"
-                  onClick={() => navigate(`/manager/tenant/${tenant.id}`)}
-                >
-                  <TableCell>{tenant.unitNumber}</TableCell>
-                  <TableCell className="font-medium">{tenant.name}</TableCell>
-                  <TableCell>{tenant.email}</TableCell>
-                  <TableCell>{tenant.phone}</TableCell>
-                  <TableCell>${tenant.balance.toFixed(2)}</TableCell>
-                  <TableCell>
-                    <Badge variant={getStatusColor(tenant.status)}>
-                      {tenant.status.charAt(0).toUpperCase() + tenant.status.slice(1)}
-                    </Badge>
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center py-4">
+                    Loading tenants...
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : filteredTenants.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center py-4">
+                    No tenants found
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filteredTenants.map((tenant) => (
+                  <TableRow 
+                    key={tenant.id}
+                    className="cursor-pointer hover:bg-muted/50"
+                    onClick={() => navigate(`/manager/tenant/${tenant.id}`)}
+                  >
+                    <TableCell className="font-medium">{tenant.name}</TableCell>
+                    <TableCell>{tenant.email}</TableCell>
+                    <TableCell>{tenant.phone}</TableCell>
+                    <TableCell>
+                      <Badge variant={tenant.accountStatus === "enabled" ? "default" : "destructive"}>
+                        {tenant.accountStatus}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={tenant.recurringBillingStatus === "active" ? "default" : "secondary"}>
+                        {tenant.recurringBillingStatus === "active" ? "Autopay" : "Manual"}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </Card>
