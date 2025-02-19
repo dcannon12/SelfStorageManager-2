@@ -18,6 +18,19 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
+import {
+  Users,
+  FileSpreadsheet,
+  Library,
+  FileText,
+  Tags,
+  TrendingUp,
+  ArrowUpRight,
+  FileStack,
+  Mail,
+  MessageSquare,
+  Edit,
+} from "lucide-react";
 
 const securitySettingsSchema = z.object({
   requireTwoFactor: z.boolean(),
@@ -34,7 +47,7 @@ const notificationSettingsSchema = z.object({
 
 export default function SettingsPage() {
   const { toast } = useToast();
-  
+
   const securityForm = useForm({
     resolver: zodResolver(securitySettingsSchema),
     defaultValues: {
@@ -64,13 +77,147 @@ export default function SettingsPage() {
           </p>
         </div>
 
-        <Tabs defaultValue="security" className="space-y-4">
-          <TabsList>
+        <Tabs defaultValue="general" className="space-y-4">
+          <TabsList className="w-full justify-start h-auto flex-wrap gap-2 bg-transparent p-0">
+            <div className="w-full">
+              <h2 className="text-sm font-semibold mb-2 text-muted-foreground">GENERAL</h2>
+              <div className="space-y-1">
+                <TabsTrigger value="user-management" className="w-full justify-start gap-2">
+                  <Users className="h-4 w-4" />
+                  User management
+                </TabsTrigger>
+                <TabsTrigger value="ledger-mapping" className="w-full justify-start gap-2">
+                  <FileSpreadsheet className="h-4 w-4" />
+                  General ledger mapping
+                </TabsTrigger>
+                <TabsTrigger value="fee-library" className="w-full justify-start gap-2">
+                  <Library className="h-4 w-4" />
+                  Fee library
+                </TabsTrigger>
+                <TabsTrigger value="lease-config" className="w-full justify-start gap-2">
+                  <FileText className="h-4 w-4" />
+                  Lease configurations
+                </TabsTrigger>
+              </div>
+            </div>
+
+            <div className="w-full mt-4">
+              <h2 className="text-sm font-semibold mb-2 text-muted-foreground">PRICING</h2>
+              <div className="space-y-1">
+                <TabsTrigger value="pricing-strategies" className="w-full justify-start gap-2">
+                  <Tags className="h-4 w-4" />
+                  Pricing strategies
+                </TabsTrigger>
+                <TabsTrigger value="value-pricing" className="w-full justify-start gap-2">
+                  <TrendingUp className="h-4 w-4" />
+                  Value pricing
+                </TabsTrigger>
+                <TabsTrigger value="rate-increase" className="w-full justify-start gap-2">
+                  <ArrowUpRight className="h-4 w-4" />
+                  Rate increase plans
+                </TabsTrigger>
+              </div>
+            </div>
+
+            <div className="w-full mt-4">
+              <h2 className="text-sm font-semibold mb-2 text-muted-foreground">COMMUNICATION</h2>
+              <div className="space-y-1">
+                <TabsTrigger value="document-templates" className="w-full justify-start gap-2">
+                  <FileStack className="h-4 w-4" />
+                  Document templates
+                </TabsTrigger>
+                <TabsTrigger value="email-config" className="w-full justify-start gap-2">
+                  <Mail className="h-4 w-4" />
+                  Email configurations
+                </TabsTrigger>
+                <TabsTrigger value="system-messages" className="w-full justify-start gap-2">
+                  <MessageSquare className="h-4 w-4" />
+                  System messages
+                </TabsTrigger>
+                <TabsTrigger value="custom-messages" className="w-full justify-start gap-2">
+                  <Edit className="h-4 w-4" />
+                  Custom messages
+                </TabsTrigger>
+              </div>
+            </div>
             <TabsTrigger value="security">Security</TabsTrigger>
             <TabsTrigger value="notifications">Notifications</TabsTrigger>
             <TabsTrigger value="access">User Access</TabsTrigger>
             <TabsTrigger value="system">System</TabsTrigger>
           </TabsList>
+
+          {/* Content sections */}
+          <TabsContent value="user-management">
+            <Card className="p-6">
+              <h3 className="text-lg font-medium mb-4">User Management</h3>
+              <div className="space-y-4">
+                <Button variant="outline">Add New User</Button>
+                {/* User list and management interface will go here */}
+              </div>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="ledger-mapping">
+            <Card className="p-6">
+              <h3 className="text-lg font-medium mb-4">General Ledger Mapping</h3>
+              {/* Ledger mapping interface will go here */}
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="fee-library">
+            <Card className="p-6">
+              <h3 className="text-lg font-medium mb-4">Fee Library</h3>
+              {/* Fee management interface will go here */}
+            </Card>
+          </TabsContent>
+          <TabsContent value="lease-config">
+            <Card className="p-6">
+              <h3 className="text-lg font-medium mb-4">Lease Configurations</h3>
+              {/* Lease Configurations interface will go here */}
+            </Card>
+          </TabsContent>
+          <TabsContent value="pricing-strategies">
+            <Card className="p-6">
+              <h3 className="text-lg font-medium mb-4">Pricing Strategies</h3>
+              {/* Pricing Strategies interface will go here */}
+            </Card>
+          </TabsContent>
+          <TabsContent value="value-pricing">
+            <Card className="p-6">
+              <h3 className="text-lg font-medium mb-4">Value Pricing</h3>
+              {/* Value Pricing interface will go here */}
+            </Card>
+          </TabsContent>
+          <TabsContent value="rate-increase">
+            <Card className="p-6">
+              <h3 className="text-lg font-medium mb-4">Rate Increase Plans</h3>
+              {/* Rate Increase Plans interface will go here */}
+            </Card>
+          </TabsContent>
+          <TabsContent value="document-templates">
+            <Card className="p-6">
+              <h3 className="text-lg font-medium mb-4">Document Templates</h3>
+              {/* Document Templates interface will go here */}
+            </Card>
+          </TabsContent>
+          <TabsContent value="email-config">
+            <Card className="p-6">
+              <h3 className="text-lg font-medium mb-4">Email Configurations</h3>
+              {/* Email Configurations interface will go here */}
+            </Card>
+          </TabsContent>
+          <TabsContent value="system-messages">
+            <Card className="p-6">
+              <h3 className="text-lg font-medium mb-4">System Messages</h3>
+              {/* System Messages interface will go here */}
+            </Card>
+          </TabsContent>
+          <TabsContent value="custom-messages">
+            <Card className="p-6">
+              <h3 className="text-lg font-medium mb-4">Custom Messages</h3>
+              {/* Custom Messages interface will go here */}
+            </Card>
+          </TabsContent>
 
           <TabsContent value="security">
             <Card className="p-6">
