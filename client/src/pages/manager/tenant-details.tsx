@@ -82,21 +82,21 @@ export default function TenantDetailsPage() {
     },
   });
 
-  // Update the query to ensure we're getting the right tenant
-  const { data: tenant, isLoading } = useQuery({
-    queryKey: ["/api/tenants", parseInt(id!)],
+  // Using customers endpoint since we don't have a tenants table yet
+  const { data: tenant, isLoading } = useQuery<Customer>({
+    queryKey: ["/api/customers", parseInt(id!)],
     enabled: !!id,
   });
 
-  // Update payments query to use tenant ID
+  // Fetch payments by customer ID
   const { data: payments } = useQuery<Payment[]>({
-    queryKey: ["/api/payments", { tenantId: parseInt(id!) }],
+    queryKey: ["/api/payments", { customerId: parseInt(id!) }],
     enabled: !!id,
   });
 
-  // Update bookings query to use tenant ID
+  // Fetch bookings by customer ID
   const { data: bookings } = useQuery<Booking[]>({
-    queryKey: ["/api/bookings", { tenantId: parseInt(id!) }],
+    queryKey: ["/api/bookings", { customerId: parseInt(id!) }],
     enabled: !!id,
   });
 
@@ -108,7 +108,7 @@ export default function TenantDetailsPage() {
         email: tenant.email,
         phone: tenant.phone,
         address: tenant.address ?? "",
-        accessCode: tenant.access_code ?? "",
+        accessCode: tenant.accessCode ?? "",
       });
     }
   }, [tenant, form]);
@@ -118,11 +118,7 @@ export default function TenantDetailsPage() {
       const response = await fetch(`/api/customers/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...data,
-          address: data.address || null,
-          accessCode: data.accessCode || null,
-        }),
+        body: JSON.stringify(data),
       });
 
       if (!response.ok) {
@@ -133,7 +129,7 @@ export default function TenantDetailsPage() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/customers", id] });
+      queryClient.invalidateQueries({ queryKey: ["/api/customers", parseInt(id!)] });
       toast({
         title: "Success",
         description: "Customer details updated successfully",
@@ -154,7 +150,6 @@ export default function TenantDetailsPage() {
     updateCustomerMutation.mutate(data);
   };
 
-  // Helper function to safely format dates
   const formatDate = (dateStr: string | undefined | null): string => {
     if (!dateStr) return 'N/A';
     try {
@@ -198,15 +193,15 @@ export default function TenantDetailsPage() {
               <div className="flex items-center gap-2 text-muted-foreground mb-1">
                 <Badge variant="outline">Tenant</Badge>
                 <span>•</span>
-                <span>ID: {tenant?.id}</span>
+                <span>ID: {tenant.id}</span>
               </div>
-              <h1 className="text-3xl font-bold">{tenant?.name}</h1>
+              <h1 className="text-3xl font-bold">{tenant.name}</h1>
               <div className="flex items-center gap-2 text-muted-foreground">
-                <Badge variant={tenant?.accountStatus === 'enabled' ? 'default' : 'secondary'}>
-                  {tenant?.accountStatus}
+                <Badge variant={tenant.accountStatus === 'enabled' ? 'default' : 'secondary'}>
+                  {tenant.accountStatus}
                 </Badge>
                 <span>•</span>
-                <span>{tenant?.email}</span>
+                <span>{tenant.email}</span>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -215,11 +210,11 @@ export default function TenantDetailsPage() {
                 size="sm"
                 onClick={() => {
                   form.reset({
-                    name: tenant?.name || '',
-                    email: tenant?.email || '',
-                    phone: tenant?.phone || '',
-                    address: tenant?.address ?? "",
-                    accessCode: tenant?.access_code ?? "",
+                    name: tenant.name || '',
+                    email: tenant.email || '',
+                    phone: tenant.phone || '',
+                    address: tenant.address ?? "",
+                    accessCode: tenant.accessCode ?? "",
                   });
                   setIsEditing(true);
                 }}
@@ -260,19 +255,19 @@ export default function TenantDetailsPage() {
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
                   <Mail className="h-4 w-4 text-muted-foreground" />
-                  <div className="text-sm">{tenant?.email || 'Not provided'}</div>
+                  <div className="text-sm">{tenant.email || 'Not provided'}</div>
                 </div>
                 <div className="flex items-center gap-2">
                   <Phone className="h-4 w-4 text-muted-foreground" />
-                  <div className="text-sm">{tenant?.phone || 'Not provided'}</div>
+                  <div className="text-sm">{tenant.phone || 'Not provided'}</div>
                 </div>
                 <div className="flex items-center gap-2">
                   <Home className="h-4 w-4 text-muted-foreground" />
-                  <div className="text-sm">{tenant?.address || 'Not provided'}</div>
+                  <div className="text-sm">{tenant.address || 'Not provided'}</div>
                 </div>
                 <div className="flex items-center gap-2">
                   <GitFork className="h-4 w-4 text-muted-foreground" />
-                  <div className="text-sm">Gate Code: {tenant?.access_code || 'Not set'}</div>
+                  <div className="text-sm">Gate Code: {tenant.accessCode || 'Not set'}</div>
                 </div>
               </div>
             </div>
@@ -300,10 +295,10 @@ export default function TenantDetailsPage() {
             {/* Current Rentals */}
             <div className="bg-white rounded-lg border">
               <div className="p-4 border-b">
-                <h2 className="text-lg font-semibold">Current Rentals for {tenant?.name}</h2>
+                <h2 className="text-lg font-semibold">Current Rentals for {tenant.name}</h2>
               </div>
               <div className="divide-y">
-                {bookings?.filter(booking => booking.tenantId === parseInt(id!)).map((booking) => (
+                {bookings?.filter(booking => booking.customerId === parseInt(id!)).map((booking) => (
                   <div key={booking.id} className="p-4">
                     <div className="grid grid-cols-3 gap-6">
                       {/* Unit Details */}
@@ -312,7 +307,7 @@ export default function TenantDetailsPage() {
                         <div className="space-y-1">
                           <div className="font-semibold">Unit {booking.unitId}</div>
                           <div className="text-sm">Size: 10x20</div>
-                          <div className="text-sm">Status: Rented by {tenant?.name}</div>
+                          <div className="text-sm">Status: Rented by {tenant.name}</div>
                           <Button variant="link" size="sm" className="h-auto p-0">
                             <LinkIcon className="h-3 w-3 mr-1" />
                             View Agreement
@@ -490,6 +485,7 @@ export default function TenantDetailsPage() {
             </Form>
           </DialogContent>
         </Dialog>
+
         {/* Add the TenantMessageDialog */}
         <TenantMessageDialog
           tenant={tenant}
