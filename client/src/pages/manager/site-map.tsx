@@ -23,10 +23,12 @@ function UnitCell({ unit }: { unit: Unit }) {
     queryKey: ["/api/customers"],
   });
 
+  // Find active booking for this unit
   const activeBooking = bookings?.find(
     b => b.unitId === unit.unit_id && b.status === "active"
   );
 
+  // Find tenant information if unit is occupied
   const tenant = activeBooking 
     ? customers?.find(c => c.id === activeBooking.customerId)
     : null;
@@ -37,38 +39,34 @@ function UnitCell({ unit }: { unit: Unit }) {
     }
   };
 
-  const getStatusColor = (isOccupied: boolean) => {
-    if (isOccupied) {
-      return "bg-blue-100 hover:bg-blue-200";
-    }
-    return "bg-emerald-100 hover:bg-emerald-200";
-  };
-
   return (
     <HoverCard>
       <HoverCardTrigger>
         <div
           className={`
             p-4 border rounded-md cursor-pointer transition-all
-            ${getStatusColor(unit.isOccupied)}
-            flex items-center justify-center
+            ${unit.isOccupied ? 'bg-blue-100 hover:bg-blue-200' : 'bg-emerald-100 hover:bg-emerald-200'}
+            flex items-center justify-center text-center
             ${unit.isOccupied ? 'hover:scale-105' : ''}
           `}
           onClick={handleClick}
         >
-          <span className="text-lg font-bold">Unit {unit.unit_id}</span>
+          <div>
+            <div className="text-lg font-bold">Unit {unit.unit_id}</div>
+            {tenant && <div className="text-sm text-muted-foreground">{tenant.name}</div>}
+          </div>
         </div>
       </HoverCardTrigger>
       <HoverCardContent className="w-80 p-4">
         <div className="space-y-4">
           {/* Unit Header */}
           <div className="text-2xl font-semibold border-b pb-2">
-            Unit {unit.unit_id} - {unit.size}
+            Unit {unit.unit_id}
           </div>
 
           {/* Unit Information */}
           <div className="space-y-1">
-            <div className="text-lg text-muted-foreground">Unit Information</div>
+            <div className="text-lg text-muted-foreground">Unit Details</div>
             <div className="flex justify-between">
               <span>Type:</span>
               <span className="font-medium capitalize">{unit.type}</span>
@@ -92,7 +90,7 @@ function UnitCell({ unit }: { unit: Unit }) {
           {/* Tenant Information */}
           {tenant && (
             <div className="space-y-1">
-              <div className="text-lg text-muted-foreground">Tenant Information</div>
+              <div className="text-lg text-muted-foreground">Current Tenant</div>
               <div className="flex justify-between">
                 <span>Name:</span>
                 <span className="font-medium">{tenant.name}</span>
@@ -107,7 +105,7 @@ function UnitCell({ unit }: { unit: Unit }) {
               </div>
               {activeBooking && (
                 <div className="flex justify-between">
-                  <span>Since:</span>
+                  <span>Move-in Date:</span>
                   <span className="font-medium">{activeBooking.startDate}</span>
                 </div>
               )}
@@ -145,9 +143,9 @@ export default function SiteMapPage() {
 
   // Calculate the grid layout
   const calculateGridCols = (unitCount: number) => {
-    if (unitCount <= 4) return 4;
-    if (unitCount <= 6) return 3;
-    return Math.min(Math.ceil(Math.sqrt(unitCount)), 10); // max 10 columns
+    if (unitCount <= 4) return 2;
+    if (unitCount <= 9) return 3;
+    return Math.min(Math.ceil(Math.sqrt(unitCount)), 6); // max 6 columns
   };
 
   const gridCols = units ? calculateGridCols(units.length) : 4;
@@ -159,7 +157,7 @@ export default function SiteMapPage() {
           <div>
             <h1 className="text-3xl font-bold">Site Map</h1>
             <p className="text-muted-foreground">
-              View and manage facility layout
+              Interactive facility layout map
             </p>
           </div>
           <div className="space-x-2">
@@ -204,7 +202,7 @@ export default function SiteMapPage() {
           ) : (
             <div className="space-y-4 bg-accent/10 rounded-lg p-4">
               <div 
-                className={`grid gap-2`} 
+                className={`grid gap-4`} 
                 style={{ 
                   gridTemplateColumns: `repeat(${gridCols}, minmax(0, 1fr))`
                 }}
