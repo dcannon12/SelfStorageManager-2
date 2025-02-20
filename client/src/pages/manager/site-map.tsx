@@ -33,12 +33,7 @@ function UnitCell({ unit }: { unit: Unit }) {
     customers?.find(c => c.id === activeBooking.customerId) : null;
 
   const handleClick = () => {
-    console.log("Clicking unit:", unit.unit_id);
-    console.log("Active booking:", activeBooking);
-    console.log("Tenant:", tenant);
-
     if (unit.isOccupied && tenant) {
-      console.log("Navigating to tenant:", tenant.id);
       navigate(`/manager/tenant/${tenant.id}`);
     }
   };
