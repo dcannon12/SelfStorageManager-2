@@ -18,7 +18,7 @@ function UnitCell({ unit }: { unit: Unit }) {
 
   const handleClick = () => {
     if (unit.isOccupied) {
-      navigate(`/manager/tenant/${unit.id}`);
+      navigate(`/manager/tenant/${unit.unit_id}`);
     }
   };
 
@@ -41,14 +41,14 @@ function UnitCell({ unit }: { unit: Unit }) {
           `}
           onClick={handleClick}
         >
-          <span className="text-lg font-bold">{unit.location}</span>
+          <span className="text-lg font-bold">{unit.unit_id}</span>
         </div>
       </HoverCardTrigger>
       <HoverCardContent className="w-80 p-4">
         <div className="space-y-4">
           {/* Unit Header */}
           <div className="text-2xl font-semibold border-b pb-2">
-            {unit.location} - {unit.size}
+            Unit {unit.unit_id} - {unit.size}
           </div>
 
           {/* Unit Information */}
@@ -57,6 +57,10 @@ function UnitCell({ unit }: { unit: Unit }) {
             <div className="flex justify-between">
               <span>Type:</span>
               <span className="font-medium capitalize">{unit.type}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Location:</span>
+              <span className="font-medium">{unit.location}</span>
             </div>
             <div className="flex justify-between">
               <span>Size:</span>
@@ -171,7 +175,7 @@ export default function SiteMapPage() {
                 }}
               >
                 {units.map((unit) => (
-                  <div key={unit.id}>
+                  <div key={unit.unit_id}>
                     <UnitCell unit={unit} />
                   </div>
                 ))}

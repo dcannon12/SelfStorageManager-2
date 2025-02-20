@@ -5,7 +5,7 @@ import { z } from "zod";
 export const unitTypes = ["small", "medium", "large", "extra-large"] as const;
 
 export const units = pgTable("units", {
-  id: serial("id").primaryKey(),
+  unit_id: serial("unit_id").primaryKey(),
   type: text("type", { enum: unitTypes }).notNull(),
   size: text("size").notNull(),
   price: integer("price").notNull(),
@@ -69,7 +69,7 @@ export const bookings = pgTable("bookings", {
 });
 
 // Schema for data insertion
-export const insertUnitSchema = createInsertSchema(units).omit({ id: true, isOccupied: true });
+export const insertUnitSchema = createInsertSchema(units).omit({ unit_id: true, isOccupied: true });
 export const insertCustomerSchema = createInsertSchema(customers).omit({ id: true });
 export const insertBookingSchema = createInsertSchema(bookings).omit({ id: true });
 export const insertLeadSchema = createInsertSchema(leads).omit({ id: true, createdAt: true });
