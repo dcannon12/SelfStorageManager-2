@@ -28,13 +28,17 @@ function UnitCell({ unit }: { unit: Unit }) {
     b => b.unitId === unit.unit_id && b.status === "active"
   );
 
-  // Find tenant information if unit is occupied
-  const tenant = activeBooking 
-    ? customers?.find(c => c.id === activeBooking.customerId)
-    : null;
+  // Find tenant information if unit is occupied and has an active booking
+  const tenant = activeBooking && activeBooking.customerId ? 
+    customers?.find(c => c.id === activeBooking.customerId) : null;
 
   const handleClick = () => {
+    console.log("Clicking unit:", unit.unit_id);
+    console.log("Active booking:", activeBooking);
+    console.log("Tenant:", tenant);
+
     if (unit.isOccupied && tenant) {
+      console.log("Navigating to tenant:", tenant.id);
       navigate(`/manager/tenant/${tenant.id}`);
     }
   };
@@ -47,7 +51,7 @@ function UnitCell({ unit }: { unit: Unit }) {
             p-4 border rounded-md cursor-pointer transition-all
             ${unit.isOccupied ? 'bg-blue-100 hover:bg-blue-200' : 'bg-emerald-100 hover:bg-emerald-200'}
             flex items-center justify-center text-center
-            ${unit.isOccupied ? 'hover:scale-105' : ''}
+            ${unit.isOccupied && tenant ? 'hover:scale-105' : ''}
           `}
           onClick={handleClick}
         >
@@ -59,12 +63,10 @@ function UnitCell({ unit }: { unit: Unit }) {
       </HoverCardTrigger>
       <HoverCardContent className="w-80 p-4">
         <div className="space-y-4">
-          {/* Unit Header */}
           <div className="text-2xl font-semibold border-b pb-2">
             Unit {unit.unit_id}
           </div>
 
-          {/* Unit Information */}
           <div className="space-y-1">
             <div className="text-lg text-muted-foreground">Unit Details</div>
             <div className="flex justify-between">
@@ -87,7 +89,6 @@ function UnitCell({ unit }: { unit: Unit }) {
             </div>
           </div>
 
-          {/* Tenant Information */}
           {tenant && (
             <div className="space-y-1">
               <div className="text-lg text-muted-foreground">Current Tenant</div>
@@ -127,7 +128,6 @@ export default function SiteMapPage() {
     setIsEditing(false);
   };
 
-  // Calculate stats based on actual unit data
   const stats = units ? [
     { 
       count: units.filter(u => !u.isOccupied).length, 
@@ -141,11 +141,10 @@ export default function SiteMapPage() {
     }
   ] : [];
 
-  // Calculate the grid layout
   const calculateGridCols = (unitCount: number) => {
     if (unitCount <= 4) return 2;
     if (unitCount <= 9) return 3;
-    return Math.min(Math.ceil(Math.sqrt(unitCount)), 6); // max 6 columns
+    return Math.min(Math.ceil(Math.sqrt(unitCount)), 6);
   };
 
   const gridCols = units ? calculateGridCols(units.length) : 4;
@@ -180,7 +179,6 @@ export default function SiteMapPage() {
           </div>
         </div>
 
-        {/* Unit Statistics */}
         <div className="flex gap-4 mb-6 flex-wrap">
           {stats.map((stat) => (
             <div
