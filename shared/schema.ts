@@ -1,4 +1,5 @@
 import { pgTable, text, serial, integer, boolean, jsonb, timestamp, decimal } from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -12,6 +13,7 @@ export const units = pgTable("units", {
   isOccupied: boolean("is_occupied").notNull().default(false),
   location: text("location").notNull(),
   pricingGroupId: integer("pricing_group_id"),
+  customerId: integer("customer_id"), 
 });
 
 export const customers = pgTable("customers", {
@@ -25,7 +27,7 @@ export const customers = pgTable("customers", {
   recurringBillingStatus: text("recurring_billing_status", { enum: ["active", "not_activated"] }).notNull().default("not_activated"),
   autopayEnabled: boolean("autopay_enabled").notNull().default(false),
   autopayMethod: jsonb("autopay_method"),
-  autopayDay: integer("autopay_day"), // Day of month for autopay
+  autopayDay: integer("autopay_day"), 
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
@@ -102,8 +104,8 @@ export const facilityLayouts = pgTable("facility_layouts", {
   facilityId: integer("facility_id").notNull(),
   name: text("name").notNull(),
   description: text("description"),
-  layout: jsonb("layout").notNull(),  // Will store the grid layout configuration
-  dimensions: jsonb("dimensions").notNull(), // Will store width and height of the layout
+  layout: jsonb("layout").notNull(),  
+  dimensions: jsonb("dimensions").notNull(), 
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
@@ -270,3 +272,14 @@ export type {
   InsertCustomerDocument, InsertCustomerInsurance, InsertDigitalSignature,
   StorageManagerData, InsertStorageManagerData
 };
+
+export const unitsRelations = relations(units, ({ one }) => ({
+  customer: one(customers, {
+    fields: [units.customerId],
+    references: [customers.id],
+  })
+}));
+
+export const customersRelations = relations(customers, ({ many }) => ({
+  units: many(units)
+}));

@@ -11,26 +11,16 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import { Unit, Customer, Booking } from "@shared/schema";
+import { Unit, Customer } from "@shared/schema";
 
 function UnitCell({ unit }: { unit: Unit }) {
   const [, navigate] = useLocation();
-  const { data: bookings } = useQuery<Booking[]>({
-    queryKey: ["/api/bookings"],
-  });
-
   const { data: customers } = useQuery<Customer[]>({
     queryKey: ["/api/customers"],
   });
 
-  // Find active booking for this unit
-  const activeBooking = bookings?.find(
-    b => b.unitId === unit.unit_id && b.status === "active"
-  );
-
-  // Find tenant information if unit is occupied and has an active booking
-  const tenant = activeBooking && activeBooking.customerId ? 
-    customers?.find(c => c.id === activeBooking.customerId) : null;
+  // Get tenant from unit's customer_id
+  const tenant = unit.customerId ? customers?.find(c => c.id === unit.customerId) : null;
 
   const handleClick = () => {
     if (unit.isOccupied && tenant) {
@@ -99,12 +89,6 @@ function UnitCell({ unit }: { unit: Unit }) {
                 <span>Phone:</span>
                 <span className="font-medium">{tenant.phone}</span>
               </div>
-              {activeBooking && (
-                <div className="flex justify-between">
-                  <span>Move-in Date:</span>
-                  <span className="font-medium">{activeBooking.startDate}</span>
-                </div>
-              )}
             </div>
           )}
         </div>
