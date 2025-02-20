@@ -82,7 +82,7 @@ export default function TenantDetailsPage() {
     },
   });
 
-  // Fetch specific tenant data
+  // Update the query to ensure we're getting the right customer
   const { data: customer, isLoading } = useQuery<Customer>({
     queryKey: ["/api/customers", parseInt(id!)],
     enabled: !!id,
