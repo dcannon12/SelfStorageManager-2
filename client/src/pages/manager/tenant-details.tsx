@@ -1,6 +1,6 @@
 import { ManagerLayout } from "@/components/manager-layout";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Customer, Payment, Booking } from "@shared/schema";
+import { Customer } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useParams } from "wouter";
@@ -53,16 +53,15 @@ import { z } from "zod";
 import { TenantMessageDialog } from "@/components/dialogs/tenant-message-dialog";
 import { GateAccessDialog } from "@/components/dialogs/gate-access-dialog";
 
-// Remove strict validation requirements
-const updateCustomerSchema = z.object({
+const updateTenantSchema = z.object({
   name: z.string(),
   email: z.string(),
   phone: z.string(),
   address: z.string().optional(),
-  accessCode: z.string().optional(),
+  access_code: z.string().optional(),
 });
 
-type UpdateCustomerInput = z.infer<typeof updateCustomerSchema>;
+type UpdateTenantInput = z.infer<typeof updateTenantSchema>;
 
 export default function TenantDetailsPage() {
   const { id } = useParams();
@@ -71,32 +70,32 @@ export default function TenantDetailsPage() {
   const [isMessageDialogOpen, setIsMessageDialogOpen] = useState(false);
   const [isGateAccessDialogOpen, setIsGateAccessDialogOpen] = useState(false);
 
-  const form = useForm<UpdateCustomerInput>({
-    resolver: zodResolver(updateCustomerSchema),
+  const form = useForm<UpdateTenantInput>({
+    resolver: zodResolver(updateTenantSchema),
     defaultValues: {
       name: "",
       email: "",
       phone: "",
       address: "",
-      accessCode: "",
+      access_code: "",
     },
   });
 
-  // Using customers endpoint since we don't have a tenants table yet
+  // Using tenants endpoint
   const { data: tenant, isLoading } = useQuery<Customer>({
-    queryKey: ["/api/customers", parseInt(id!)],
+    queryKey: ["/api/tenants", parseInt(id!)],
     enabled: !!id,
   });
 
-  // Fetch payments by customer ID
+  // Fetch payments by tenant ID
   const { data: payments } = useQuery<Payment[]>({
-    queryKey: ["/api/payments", { customerId: parseInt(id!) }],
+    queryKey: ["/api/payments", { tenantId: parseInt(id!) }],
     enabled: !!id,
   });
 
-  // Fetch bookings by customer ID
+  // Fetch bookings by tenant ID
   const { data: bookings } = useQuery<Booking[]>({
-    queryKey: ["/api/bookings", { customerId: parseInt(id!) }],
+    queryKey: ["/api/bookings", { tenantId: parseInt(id!) }],
     enabled: !!id,
   });
 
@@ -108,14 +107,14 @@ export default function TenantDetailsPage() {
         email: tenant.email,
         phone: tenant.phone,
         address: tenant.address ?? "",
-        accessCode: tenant.accessCode ?? "",
+        access_code: tenant.access_code ?? "",
       });
     }
   }, [tenant, form]);
 
-  const updateCustomerMutation = useMutation({
-    mutationFn: async (data: UpdateCustomerInput) => {
-      const response = await fetch(`/api/customers/${id}`, {
+  const updateTenantMutation = useMutation({
+    mutationFn: async (data: UpdateTenantInput) => {
+      const response = await fetch(`/api/tenants/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
@@ -123,16 +122,16 @@ export default function TenantDetailsPage() {
 
       if (!response.ok) {
         const error = await response.text();
-        throw new Error(error || 'Failed to update customer');
+        throw new Error(error || 'Failed to update tenant');
       }
 
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/customers", parseInt(id!)] });
+      queryClient.invalidateQueries({ queryKey: ["/api/tenants", parseInt(id!)] });
       toast({
         title: "Success",
-        description: "Customer details updated successfully",
+        description: "Tenant details updated successfully",
       });
       setIsEditing(false);
     },
@@ -146,8 +145,8 @@ export default function TenantDetailsPage() {
     },
   });
 
-  const onSubmit = (data: UpdateCustomerInput) => {
-    updateCustomerMutation.mutate(data);
+  const onSubmit = (data: UpdateTenantInput) => {
+    updateTenantMutation.mutate(data);
   };
 
   const formatDate = (dateStr: string | undefined | null): string => {
@@ -214,7 +213,7 @@ export default function TenantDetailsPage() {
                     email: tenant.email || '',
                     phone: tenant.phone || '',
                     address: tenant.address ?? "",
-                    accessCode: tenant.accessCode ?? "",
+                    access_code: tenant.access_code ?? "",
                   });
                   setIsEditing(true);
                 }}
@@ -255,19 +254,19 @@ export default function TenantDetailsPage() {
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
                   <Mail className="h-4 w-4 text-muted-foreground" />
-                  <div className="text-sm">{tenant.email || 'Not provided'}</div>
+                  <div className="text-sm">{tenant.email}</div>
                 </div>
                 <div className="flex items-center gap-2">
                   <Phone className="h-4 w-4 text-muted-foreground" />
-                  <div className="text-sm">{tenant.phone || 'Not provided'}</div>
+                  <div className="text-sm">{tenant.phone}</div>
                 </div>
                 <div className="flex items-center gap-2">
                   <Home className="h-4 w-4 text-muted-foreground" />
-                  <div className="text-sm">{tenant.address || 'Not provided'}</div>
+                  <div className="text-sm">{tenant.address}</div>
                 </div>
                 <div className="flex items-center gap-2">
                   <GitFork className="h-4 w-4 text-muted-foreground" />
-                  <div className="text-sm">Gate Code: {tenant.accessCode || 'Not set'}</div>
+                  <div className="text-sm">Gate Code: {tenant.access_code}</div>
                 </div>
               </div>
             </div>
@@ -298,7 +297,7 @@ export default function TenantDetailsPage() {
                 <h2 className="text-lg font-semibold">Current Rentals for {tenant.name}</h2>
               </div>
               <div className="divide-y">
-                {bookings?.filter(booking => booking.customerId === parseInt(id!)).map((booking) => (
+                {bookings?.filter(booking => booking.tenantId === parseInt(id!)).map((booking) => (
                   <div key={booking.id} className="p-4">
                     <div className="grid grid-cols-3 gap-6">
                       {/* Unit Details */}
@@ -455,7 +454,7 @@ export default function TenantDetailsPage() {
                 />
                 <FormField
                   control={form.control}
-                  name="accessCode"
+                  name="access_code"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Gate Access Code</FormLabel>
@@ -476,9 +475,9 @@ export default function TenantDetailsPage() {
                   </Button>
                   <Button
                     type="submit"
-                    disabled={updateCustomerMutation.isPending}
+                    disabled={updateTenantMutation.isPending}
                   >
-                    {updateCustomerMutation.isPending ? 'Saving...' : 'Save Changes'}
+                    {updateTenantMutation.isPending ? 'Saving...' : 'Save Changes'}
                   </Button>
                 </DialogFooter>
               </form>
