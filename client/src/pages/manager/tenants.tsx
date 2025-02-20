@@ -14,26 +14,15 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
+import { Customer } from "@shared/schema";
 import { useQuery } from "@tanstack/react-query";
-
-// Define Tenant type based on our database schema
-type Tenant = {
-  id: number;
-  name: string;
-  email: string;
-  phone: string;
-  address: string | null;
-  access_code: string | null;
-  account_status: "enabled" | "disabled";
-  recurring_billing_status: "active" | "not_activated";
-};
 
 export default function TenantsPage() {
   const [, navigate] = useLocation();
   const [searchTerm, setSearchTerm] = useState("");
 
-  const { data: tenants, isLoading } = useQuery<Tenant[]>({
-    queryKey: ["/api/tenants"],
+  const { data: tenants, isLoading } = useQuery<Customer[]>({
+    queryKey: ["/api/customers"],
   });
 
   const filteredTenants = tenants?.filter(tenant => 
@@ -99,13 +88,13 @@ export default function TenantsPage() {
                     <TableCell>{tenant.email}</TableCell>
                     <TableCell>{tenant.phone}</TableCell>
                     <TableCell>
-                      <Badge variant={tenant.account_status === "enabled" ? "default" : "destructive"}>
-                        {tenant.account_status}
+                      <Badge variant={tenant.accountStatus === "enabled" ? "default" : "destructive"}>
+                        {tenant.accountStatus}
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Badge variant={tenant.recurring_billing_status === "active" ? "default" : "secondary"}>
-                        {tenant.recurring_billing_status === "active" ? "Autopay" : "Manual"}
+                      <Badge variant={tenant.recurringBillingStatus === "active" ? "default" : "secondary"}>
+                        {tenant.recurringBillingStatus === "active" ? "Autopay" : "Manual"}
                       </Badge>
                     </TableCell>
                   </TableRow>
