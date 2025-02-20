@@ -268,11 +268,11 @@ export default function TenantDetailsPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <Home className="h-4 w-4 text-muted-foreground" />
-                  <div className="text-sm">{customer?.address}</div>
+                  <div className="text-sm">{customer?.address || 'Not provided'}</div>
                 </div>
                 <div className="flex items-center gap-2">
                   <GitFork className="h-4 w-4 text-muted-foreground" />
-                  <div className="text-sm">Gate Code: {customer?.accessCode}</div>
+                  <div className="text-sm">Gate Code: {customer?.access_code || 'Not set'}</div>
                 </div>
               </div>
             </div>
