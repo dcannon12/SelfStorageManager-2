@@ -11,14 +11,29 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import { Unit, Customer, Booking, Payment } from "@shared/schema";
+import { Unit, Customer, Booking } from "@shared/schema";
 
 function UnitCell({ unit }: { unit: Unit }) {
   const [, navigate] = useLocation();
+  const { data: bookings } = useQuery<Booking[]>({
+    queryKey: ["/api/bookings"],
+  });
+
+  const { data: customers } = useQuery<Customer[]>({
+    queryKey: ["/api/customers"],
+  });
+
+  const activeBooking = bookings?.find(
+    b => b.unitId === unit.unit_id && b.status === "active"
+  );
+
+  const tenant = activeBooking 
+    ? customers?.find(c => c.id === activeBooking.customerId)
+    : null;
 
   const handleClick = () => {
-    if (unit.isOccupied) {
-      navigate(`/manager/tenant/${unit.unit_id}`);
+    if (unit.isOccupied && tenant) {
+      navigate(`/manager/tenant/${tenant.id}`);
     }
   };
 
@@ -41,7 +56,7 @@ function UnitCell({ unit }: { unit: Unit }) {
           `}
           onClick={handleClick}
         >
-          <span className="text-lg font-bold">{unit.unit_id}</span>
+          <span className="text-lg font-bold">Unit {unit.unit_id}</span>
         </div>
       </HoverCardTrigger>
       <HoverCardContent className="w-80 p-4">
@@ -53,14 +68,10 @@ function UnitCell({ unit }: { unit: Unit }) {
 
           {/* Unit Information */}
           <div className="space-y-1">
-            <div className="text-lg text-muted-foreground">Unit</div>
+            <div className="text-lg text-muted-foreground">Unit Information</div>
             <div className="flex justify-between">
               <span>Type:</span>
               <span className="font-medium capitalize">{unit.type}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Location:</span>
-              <span className="font-medium">{unit.location}</span>
             </div>
             <div className="flex justify-between">
               <span>Size:</span>
@@ -77,6 +88,31 @@ function UnitCell({ unit }: { unit: Unit }) {
               </Badge>
             </div>
           </div>
+
+          {/* Tenant Information */}
+          {tenant && (
+            <div className="space-y-1">
+              <div className="text-lg text-muted-foreground">Tenant Information</div>
+              <div className="flex justify-between">
+                <span>Name:</span>
+                <span className="font-medium">{tenant.name}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Email:</span>
+                <span className="font-medium">{tenant.email}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Phone:</span>
+                <span className="font-medium">{tenant.phone}</span>
+              </div>
+              {activeBooking && (
+                <div className="flex justify-between">
+                  <span>Since:</span>
+                  <span className="font-medium">{activeBooking.startDate}</span>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </HoverCardContent>
     </HoverCard>
@@ -91,7 +127,6 @@ export default function SiteMapPage() {
 
   const handleSave = () => {
     setIsEditing(false);
-    // Save changes to the backend
   };
 
   // Calculate stats based on actual unit data
