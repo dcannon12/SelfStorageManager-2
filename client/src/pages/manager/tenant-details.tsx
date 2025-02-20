@@ -82,36 +82,36 @@ export default function TenantDetailsPage() {
     },
   });
 
-  // Update the query to ensure we're getting the right customer
-  const { data: customer, isLoading } = useQuery<Customer>({
-    queryKey: ["/api/customers", parseInt(id!)],
+  // Update the query to ensure we're getting the right tenant
+  const { data: tenant, isLoading } = useQuery({
+    queryKey: ["/api/tenants", parseInt(id!)],
     enabled: !!id,
   });
 
-  // Fetch tenant-specific payments
+  // Update payments query to use tenant ID
   const { data: payments } = useQuery<Payment[]>({
-    queryKey: ["/api/payments", { customerId: parseInt(id!) }],
+    queryKey: ["/api/payments", { tenantId: parseInt(id!) }],
     enabled: !!id,
   });
 
-  // Fetch tenant-specific bookings
+  // Update bookings query to use tenant ID
   const { data: bookings } = useQuery<Booking[]>({
-    queryKey: ["/api/bookings", { customerId: parseInt(id!) }],
+    queryKey: ["/api/bookings", { tenantId: parseInt(id!) }],
     enabled: !!id,
   });
 
-  // Update form when customer data is loaded
+  // Update form when tenant data is loaded
   useEffect(() => {
-    if (customer) {
+    if (tenant) {
       form.reset({
-        name: customer.name,
-        email: customer.email,
-        phone: customer.phone,
-        address: customer.address ?? "",
-        accessCode: customer.accessCode ?? "",
+        name: tenant.name,
+        email: tenant.email,
+        phone: tenant.phone,
+        address: tenant.address ?? "",
+        accessCode: tenant.access_code ?? "",
       });
     }
-  }, [customer, form]);
+  }, [tenant, form]);
 
   const updateCustomerMutation = useMutation({
     mutationFn: async (data: UpdateCustomerInput) => {
@@ -184,7 +184,7 @@ export default function TenantDetailsPage() {
     );
   }
 
-  if (!customer) {
+  if (!tenant) {
     return null;
   }
 
@@ -198,15 +198,15 @@ export default function TenantDetailsPage() {
               <div className="flex items-center gap-2 text-muted-foreground mb-1">
                 <Badge variant="outline">Tenant</Badge>
                 <span>•</span>
-                <span>ID: {customer?.id}</span>
+                <span>ID: {tenant?.id}</span>
               </div>
-              <h1 className="text-3xl font-bold">{customer?.name}</h1>
+              <h1 className="text-3xl font-bold">{tenant?.name}</h1>
               <div className="flex items-center gap-2 text-muted-foreground">
-                <Badge variant={customer?.accountStatus === 'enabled' ? 'default' : 'secondary'}>
-                  {customer?.accountStatus}
+                <Badge variant={tenant?.accountStatus === 'enabled' ? 'default' : 'secondary'}>
+                  {tenant?.accountStatus}
                 </Badge>
                 <span>•</span>
-                <span>{customer?.email}</span>
+                <span>{tenant?.email}</span>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -215,11 +215,11 @@ export default function TenantDetailsPage() {
                 size="sm"
                 onClick={() => {
                   form.reset({
-                    name: customer?.name || '',
-                    email: customer?.email || '',
-                    phone: customer?.phone || '',
-                    address: customer?.address ?? "",
-                    accessCode: customer?.accessCode ?? "",
+                    name: tenant?.name || '',
+                    email: tenant?.email || '',
+                    phone: tenant?.phone || '',
+                    address: tenant?.address ?? "",
+                    accessCode: tenant?.access_code ?? "",
                   });
                   setIsEditing(true);
                 }}
@@ -260,19 +260,19 @@ export default function TenantDetailsPage() {
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
                   <Mail className="h-4 w-4 text-muted-foreground" />
-                  <div className="text-sm">{customer?.email}</div>
+                  <div className="text-sm">{tenant?.email || 'Not provided'}</div>
                 </div>
                 <div className="flex items-center gap-2">
                   <Phone className="h-4 w-4 text-muted-foreground" />
-                  <div className="text-sm">{customer?.phone}</div>
+                  <div className="text-sm">{tenant?.phone || 'Not provided'}</div>
                 </div>
                 <div className="flex items-center gap-2">
                   <Home className="h-4 w-4 text-muted-foreground" />
-                  <div className="text-sm">{customer?.address || 'Not provided'}</div>
+                  <div className="text-sm">{tenant?.address || 'Not provided'}</div>
                 </div>
                 <div className="flex items-center gap-2">
                   <GitFork className="h-4 w-4 text-muted-foreground" />
-                  <div className="text-sm">Gate Code: {customer?.access_code || 'Not set'}</div>
+                  <div className="text-sm">Gate Code: {tenant?.access_code || 'Not set'}</div>
                 </div>
               </div>
             </div>
@@ -300,10 +300,10 @@ export default function TenantDetailsPage() {
             {/* Current Rentals */}
             <div className="bg-white rounded-lg border">
               <div className="p-4 border-b">
-                <h2 className="text-lg font-semibold">Current Rentals for {customer?.name}</h2>
+                <h2 className="text-lg font-semibold">Current Rentals for {tenant?.name}</h2>
               </div>
               <div className="divide-y">
-                {bookings?.filter(booking => booking.customerId === parseInt(id!)).map((booking) => (
+                {bookings?.filter(booking => booking.tenantId === parseInt(id!)).map((booking) => (
                   <div key={booking.id} className="p-4">
                     <div className="grid grid-cols-3 gap-6">
                       {/* Unit Details */}
@@ -312,7 +312,7 @@ export default function TenantDetailsPage() {
                         <div className="space-y-1">
                           <div className="font-semibold">Unit {booking.unitId}</div>
                           <div className="text-sm">Size: 10x20</div>
-                          <div className="text-sm">Status: Rented by {customer?.name}</div>
+                          <div className="text-sm">Status: Rented by {tenant?.name}</div>
                           <Button variant="link" size="sm" className="h-auto p-0">
                             <LinkIcon className="h-3 w-3 mr-1" />
                             View Agreement
@@ -402,7 +402,7 @@ export default function TenantDetailsPage() {
         <Dialog open={isEditing} onOpenChange={setIsEditing}>
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
-              <DialogTitle>Edit Customer Details</DialogTitle>
+              <DialogTitle>Edit Tenant Details</DialogTitle>
             </DialogHeader>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -492,12 +492,12 @@ export default function TenantDetailsPage() {
         </Dialog>
         {/* Add the TenantMessageDialog */}
         <TenantMessageDialog
-          tenant={customer}
+          tenant={tenant}
           open={isMessageDialogOpen}
           onOpenChange={setIsMessageDialogOpen}
         />
         <GateAccessDialog
-          tenant={customer}
+          tenant={tenant}
           open={isGateAccessDialogOpen}
           onOpenChange={setIsGateAccessDialogOpen}
         />
