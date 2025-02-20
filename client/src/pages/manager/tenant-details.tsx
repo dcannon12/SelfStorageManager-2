@@ -198,9 +198,9 @@ export default function TenantDetailsPage() {
               <div className="flex items-center gap-2 text-muted-foreground mb-1">
                 <Badge variant="outline">Tenant</Badge>
                 <span>•</span>
-                <span>ID: {id}</span>
+                <span>ID: {customer?.id}</span>
               </div>
-              <h1 className="text-3xl font-bold mb-2">{customer?.name}</h1>
+              <h1 className="text-3xl font-bold">{customer?.name}</h1>
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Badge variant={customer?.accountStatus === 'enabled' ? 'default' : 'secondary'}>
                   {customer?.accountStatus}
