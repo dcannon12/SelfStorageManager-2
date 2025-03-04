@@ -1,46 +1,35 @@
-import { drizzle } from 'drizzle-orm/mysql2';
-import mysql from 'mysql2/promise';
+import { drizzle } from 'drizzle-orm/postgres-js';
+import postgres from 'postgres';
 import * as schema from "@shared/schema";
 
-// Set up the connection config to match MySQL Workbench settings
-const config = {
-  host: '127.0.0.1',
-  port: 3306,
-  user: 'root',
-  password: 'password',
-  database: 'storage_manager_db',
-  connectionLimit: 10,
-  enableKeepAlive: true,
-  keepAliveInitialDelay: 0,
-  waitForConnections: true,
-  connectTimeout: 10000,
-  queueLimit: 0,
-  ssl: {
-    rejectUnauthorized: false
-  }
-};
+// Create the connection using environment variables
+const connectionString = process.env.DATABASE_URL;
+if (!connectionString) {
+  throw new Error("DATABASE_URL environment variable is required");
+}
 
-// Create the connection pool with error handling
-const pool = mysql.createPool(config);
+// Create the connection client
+const client = postgres(connectionString, { 
+  max: 10,
+  idle_timeout: 20,
+  connect_timeout: 10
+});
 
-// Test the connection
-pool.getConnection()
-  .then(connection => {
-    console.log('Successfully connected to MySQL database');
-    // Execute a test query to ensure database exists
-    return connection.query('SELECT 1')
-      .then(() => {
-        console.log('Database connection verified');
-        connection.release();
-      });
-  })
-  .catch(err => {
+// Create the Drizzle database instance
+export const db = drizzle(client, { schema });
+
+// Test the connection by executing a simple query
+async function testConnection() {
+  try {
+    const result = await client`SELECT 1`;
+    console.log('Successfully connected to PostgreSQL database');
+  } catch (err) {
     console.error('Error connecting to the database:', err);
-    if (err.code === 'ER_BAD_DB_ERROR') {
-      console.error('Database does not exist. Please create it first.');
-    }
     throw err;
-  });
+  }
+}
 
-export { pool };
-export const db = drizzle(pool, { schema, mode: 'default' });
+// Run the connection test
+testConnection();
+
+export { client };
