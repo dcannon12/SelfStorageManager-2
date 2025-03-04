@@ -2,20 +2,35 @@ import { drizzle } from 'drizzle-orm/mysql2';
 import mysql from 'mysql2/promise';
 import * as schema from "@shared/schema";
 
-if (!process.env.DATABASE_URL) {
-  throw new Error(
-    "DATABASE_URL must be set. Did you forget to provision a database?",
-  );
+// Function to parse database URL and return connection config
+function getConnectionConfig() {
+  if (process.env.DATABASE_URL) {
+    try {
+      const url = new URL(process.env.DATABASE_URL);
+      return {
+        host: url.hostname,
+        port: parseInt(url.port || '3306'),
+        user: url.username,
+        password: url.password,
+        database: url.pathname.substring(1), // Remove leading '/'
+      };
+    } catch (error) {
+      console.error('Error parsing DATABASE_URL:', error);
+    }
+  }
+
+  // Fallback to individual environment variables
+  return {
+    host: process.env.DB_HOST || '127.0.0.1',
+    port: parseInt(process.env.DB_PORT || '3306'),
+    user: process.env.DB_USER || 'root',
+    password: process.env.DB_PASSWORD || 'password',
+    database: process.env.DB_NAME || 'storage_manager_db',
+  };
 }
 
-// Parse MySQL connection URL
-const url = new URL(process.env.DATABASE_URL);
-const connectionConfig = {
-  host: url.hostname,
-  user: url.username,
-  password: url.password,
-  database: url.pathname.substring(1), // Remove leading '/'
-  port: parseInt(url.port || '3306'),
+const config = {
+  ...getConnectionConfig(),
   connectionLimit: 10,
   enableKeepAlive: true,
   keepAliveInitialDelay: 0,
@@ -25,7 +40,7 @@ const connectionConfig = {
 };
 
 // Create the connection pool with error handling
-const pool = mysql.createPool(connectionConfig);
+const pool = mysql.createPool(config);
 
 // Test the connection
 pool.getConnection()
