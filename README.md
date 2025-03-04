@@ -131,6 +131,41 @@ The application uses a PostgreSQL database with the following main entities:
 
 Each entity is defined in `shared/schema.ts` using Drizzle ORM with proper relations and validations.
 
+## Quick Start Guide
+
+1. **Clone the Repository**
+   ```bash
+   git clone https://github.com/YOUR-USERNAME/SelfStorageManager-2.git
+   cd SelfStorageManager-2
+   ```
+
+2. **Set Up Environment Variables**
+   ```bash
+   # Copy the example environment file
+   cp .env.example .env
+
+   # Edit .env with your PostgreSQL credentials
+   nano .env
+   ```
+
+3. **Install Dependencies**
+   ```bash
+   npm install
+   ```
+
+4. **Set Up the Database**
+   ```bash
+   # Push the schema to your database
+   npm run db:push
+   ```
+
+5. **Start Development Server**
+   ```bash
+   npm run dev
+   ```
+
+The application will be available at `http://localhost:5000`
+
 ## Development Guidelines
 
 1. **Code Organization**

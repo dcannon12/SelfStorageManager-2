@@ -19,11 +19,26 @@
 
 ## Setting Up the Project Locally
 
-1. Clone the repository:
+1. Clone the repository (Recommended Method):
    ```bash
+   # Clone the repository
    git clone [your-repo-url]
    cd storage-management-system
+
+   # Create a new branch for your changes (optional)
+   git checkout -b my-feature-branch
    ```
+
+   Alternative (Not Recommended):
+   If you must download as ZIP:
+   - Extract the ZIP file
+   - Initialize as a Git repository:
+     ```bash
+     cd storage-management-system
+     git init
+     git add .
+     git commit -m "Initial commit"
+     ```
 
 2. Install dependencies:
    ```bash
@@ -46,7 +61,7 @@
    - ESLint
    - Prettier
    - TypeScript and JavaScript Language Features
-   
+
    Create `.vscode/settings.json`:
    ```json
    {
@@ -96,7 +111,10 @@ The application will be available at `http://localhost:5000`
          "skipFiles": ["<node_internals>/**"],
          "program": "${workspaceFolder}/server/index.ts",
          "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/tsx",
-         "outFiles": ["${workspaceFolder}/**/*.js"]
+         "outFiles": ["${workspaceFolder}/**/*.js"],
+         "env": {
+           "NODE_ENV": "development"
+         }
        }
      ]
    }
