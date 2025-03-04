@@ -3,14 +3,6 @@ import { type InsertUnit, type InsertCustomer, type InsertBooking, type InsertLe
 import { units, customers, bookings, leads, pricingGroups, payments } from "@shared/schema";
 import { db } from "./db";
 import { eq } from "drizzle-orm";
-import { 
-  type NotificationTemplate, type NotificationLog,
-  type InsertNotificationTemplate, type InsertNotificationLog,
-  notificationTemplates, notificationLogs,
-  type CustomerDocument, type CustomerInsurance, type DigitalSignature,
-  type InsertCustomerDocument, type InsertCustomerInsurance, type InsertDigitalSignature,
-  customerDocuments, customerInsurance, digitalSignatures
-} from "@shared/schema";
 
 export interface IStorage {
   // Units
@@ -52,31 +44,6 @@ export interface IStorage {
   getPayment(id: number): Promise<Payment | undefined>;
   createPayment(payment: InsertPayment): Promise<Payment>;
   updatePaymentStatus(id: number, status: "pending" | "completed" | "failed" | "refunded"): Promise<Payment>;
-
-  // Notification Templates
-  getNotificationTemplates(): Promise<NotificationTemplate[]>;
-  getNotificationTemplate(id: number): Promise<NotificationTemplate | undefined>;
-  createNotificationTemplate(template: InsertNotificationTemplate): Promise<NotificationTemplate>;
-  updateNotificationTemplate(id: number, template: Partial<InsertNotificationTemplate>): Promise<NotificationTemplate>;
-  toggleNotificationTemplate(id: number, isActive: boolean): Promise<NotificationTemplate>;
-
-  // Notification Logs
-  getNotificationLogs(customerId?: number): Promise<NotificationLog[]>;
-  createNotificationLog(log: InsertNotificationLog): Promise<NotificationLog>;
-  updateNotificationLogStatus(id: number, status: "sent" | "failed", errorMessage?: string): Promise<NotificationLog>;
-
-  // Customer Portal Methods
-  getCustomerDocuments(customerId: number): Promise<CustomerDocument[]>;
-  createCustomerDocument(document: InsertCustomerDocument): Promise<CustomerDocument>;
-  updateCustomerDocument(id: number, document: Partial<InsertCustomerDocument>): Promise<CustomerDocument>;
-  deleteCustomerDocument(id: number): Promise<void>;
-
-  getCustomerInsurance(customerId: number): Promise<CustomerInsurance[]>;
-  createCustomerInsurance(insurance: InsertCustomerInsurance): Promise<CustomerInsurance>;
-  updateCustomerInsurance(id: number, insurance: Partial<InsertCustomerInsurance>): Promise<CustomerInsurance>;
-
-  createDigitalSignature(signature: InsertDigitalSignature): Promise<DigitalSignature>;
-  getDocumentSignatures(documentId: number): Promise<DigitalSignature[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -85,32 +52,33 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUnit(id: number): Promise<Unit | undefined> {
-    const [unit] = await db.select().from(units).where(eq(units.id, id));
-    return unit;
+    const results = await db.select().from(units).where(eq(units.unit_id, id));
+    return results[0];
   }
 
   async createUnit(unit: InsertUnit): Promise<Unit> {
-    const [newUnit] = await db.insert(units).values(unit).returning();
+    const result = await db.insert(units).values(unit);
+    const id = result[0].insertId;
+    const [newUnit] = await db.select().from(units).where(eq(units.unit_id, id));
     return newUnit;
   }
 
   async updateUnitStatus(id: number, isOccupied: boolean): Promise<Unit> {
-    const [updatedUnit] = await db
-      .update(units)
-      .set({ isOccupied })
-      .where(eq(units.id, id))
-      .returning();
+    await db.update(units).set({ isOccupied }).where(eq(units.unit_id, id));
+    const [updatedUnit] = await db.select().from(units).where(eq(units.unit_id, id));
     if (!updatedUnit) throw new Error("Unit not found");
     return updatedUnit;
   }
 
   async getCustomer(id: number): Promise<Customer | undefined> {
-    const [customer] = await db.select().from(customers).where(eq(customers.id, id));
-    return customer;
+    const results = await db.select().from(customers).where(eq(customers.id, id));
+    return results[0];
   }
 
   async createCustomer(customer: InsertCustomer): Promise<Customer> {
-    const [newCustomer] = await db.insert(customers).values(customer).returning();
+    const result = await db.insert(customers).values(customer);
+    const id = result[0].insertId;
+    const [newCustomer] = await db.select().from(customers).where(eq(customers.id, id));
     return newCustomer;
   }
 
@@ -123,17 +91,16 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createBooking(booking: InsertBooking): Promise<Booking> {
-    const [newBooking] = await db.insert(bookings).values(booking).returning();
+    const result = await db.insert(bookings).values(booking);
+    const id = result[0].insertId;
+    const [newBooking] = await db.select().from(bookings).where(eq(bookings.id, id));
     await this.updateUnitStatus(booking.unitId, true);
     return newBooking;
   }
 
   async updateBookingStatus(id: number, status: "active" | "completed" | "cancelled"): Promise<Booking> {
-    const [updatedBooking] = await db
-      .update(bookings)
-      .set({ status })
-      .where(eq(bookings.id, id))
-      .returning();
+    await db.update(bookings).set({ status }).where(eq(bookings.id, id));
+    const [updatedBooking] = await db.select().from(bookings).where(eq(bookings.id, id));
     if (!updatedBooking) throw new Error("Booking not found");
 
     if (status === "completed" || status === "cancelled") {
@@ -147,21 +114,20 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getLead(id: number): Promise<Lead | undefined> {
-    const [lead] = await db.select().from(leads).where(eq(leads.id, id));
-    return lead;
+    const results = await db.select().from(leads).where(eq(leads.id, id));
+    return results[0];
   }
 
   async createLead(lead: InsertLead): Promise<Lead> {
-    const [newLead] = await db.insert(leads).values(lead).returning();
+    const result = await db.insert(leads).values(lead);
+    const id = result[0].insertId;
+    const [newLead] = await db.select().from(leads).where(eq(leads.id, id));
     return newLead;
   }
 
   async updateLeadStatus(id: number, status: "new" | "contacted" | "qualified" | "converted" | "lost"): Promise<Lead> {
-    const [updatedLead] = await db
-      .update(leads)
-      .set({ status })
-      .where(eq(leads.id, id))
-      .returning();
+    await db.update(leads).set({ status }).where(eq(leads.id, id));
+    const [updatedLead] = await db.select().from(leads).where(eq(leads.id, id));
     if (!updatedLead) throw new Error("Lead not found");
     return updatedLead;
   }
@@ -171,21 +137,20 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getPricingGroup(id: number): Promise<PricingGroup | undefined> {
-    const [group] = await db.select().from(pricingGroups).where(eq(pricingGroups.id, id));
-    return group;
+    const results = await db.select().from(pricingGroups).where(eq(pricingGroups.id, id));
+    return results[0];
   }
 
   async createPricingGroup(group: InsertPricingGroup): Promise<PricingGroup> {
-    const [newGroup] = await db.insert(pricingGroups).values(group).returning();
+    const result = await db.insert(pricingGroups).values(group);
+    const id = result[0].insertId;
+    const [newGroup] = await db.select().from(pricingGroups).where(eq(pricingGroups.id, id));
     return newGroup;
   }
 
   async updatePricingGroup(id: number, group: Partial<InsertPricingGroup>): Promise<PricingGroup> {
-    const [updatedGroup] = await db
-      .update(pricingGroups)
-      .set(group)
-      .where(eq(pricingGroups.id, id))
-      .returning();
+    await db.update(pricingGroups).set(group).where(eq(pricingGroups.id, id));
+    const [updatedGroup] = await db.select().from(pricingGroups).where(eq(pricingGroups.id, id));
     if (!updatedGroup) throw new Error("Pricing group not found");
     return updatedGroup;
   }
@@ -195,180 +160,22 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getPayment(id: number): Promise<Payment | undefined> {
-    const [payment] = await db.select().from(payments).where(eq(payments.id, id));
-    return payment;
+    const results = await db.select().from(payments).where(eq(payments.id, id));
+    return results[0];
   }
 
   async createPayment(payment: InsertPayment): Promise<Payment> {
-    const [newPayment] = await db.insert(payments).values(payment).returning();
+    const result = await db.insert(payments).values(payment);
+    const id = result[0].insertId;
+    const [newPayment] = await db.select().from(payments).where(eq(payments.id, id));
     return newPayment;
   }
 
   async updatePaymentStatus(id: number, status: "pending" | "completed" | "failed" | "refunded"): Promise<Payment> {
-    const [updatedPayment] = await db
-      .update(payments)
-      .set({ status })
-      .where(eq(payments.id, id))
-      .returning();
+    await db.update(payments).set({ status }).where(eq(payments.id, id));
+    const [updatedPayment] = await db.select().from(payments).where(eq(payments.id, id));
     if (!updatedPayment) throw new Error("Payment not found");
     return updatedPayment;
-  }
-
-  // Notification Templates
-  async getNotificationTemplates(): Promise<NotificationTemplate[]> {
-    return await db.select().from(notificationTemplates);
-  }
-
-  async getNotificationTemplate(id: number): Promise<NotificationTemplate | undefined> {
-    const [template] = await db
-      .select()
-      .from(notificationTemplates)
-      .where(eq(notificationTemplates.id, id));
-    return template;
-  }
-
-  async createNotificationTemplate(template: InsertNotificationTemplate): Promise<NotificationTemplate> {
-    const [newTemplate] = await db
-      .insert(notificationTemplates)
-      .values(template)
-      .returning();
-    return newTemplate;
-  }
-
-  async updateNotificationTemplate(
-    id: number,
-    template: Partial<InsertNotificationTemplate>
-  ): Promise<NotificationTemplate> {
-    const [updatedTemplate] = await db
-      .update(notificationTemplates)
-      .set({ ...template, updatedAt: new Date() })
-      .where(eq(notificationTemplates.id, id))
-      .returning();
-    if (!updatedTemplate) throw new Error("Template not found");
-    return updatedTemplate;
-  }
-
-  async toggleNotificationTemplate(id: number, isActive: boolean): Promise<NotificationTemplate> {
-    const [updatedTemplate] = await db
-      .update(notificationTemplates)
-      .set({ isActive, updatedAt: new Date() })
-      .where(eq(notificationTemplates.id, id))
-      .returning();
-    if (!updatedTemplate) throw new Error("Template not found");
-    return updatedTemplate;
-  }
-
-  // Notification Logs
-  async getNotificationLogs(customerId?: number): Promise<NotificationLog[]> {
-    let query = db.select().from(notificationLogs);
-    if (customerId) {
-      query = query.where(eq(notificationLogs.customerId, customerId));
-    }
-    return await query;
-  }
-
-  async createNotificationLog(log: InsertNotificationLog): Promise<NotificationLog> {
-    const [newLog] = await db
-      .insert(notificationLogs)
-      .values(log)
-      .returning();
-    return newLog;
-  }
-
-  async updateNotificationLogStatus(
-    id: number,
-    status: "sent" | "failed",
-    errorMessage?: string
-  ): Promise<NotificationLog> {
-    const [updatedLog] = await db
-      .update(notificationLogs)
-      .set({ 
-        status, 
-        errorMessage,
-        sentAt: status === "sent" ? new Date() : null 
-      })
-      .where(eq(notificationLogs.id, id))
-      .returning();
-    if (!updatedLog) throw new Error("Log not found");
-    return updatedLog;
-  }
-
-  // Customer Portal Methods
-  async getCustomerDocuments(customerId: number): Promise<CustomerDocument[]> {
-    return await db
-      .select()
-      .from(customerDocuments)
-      .where(eq(customerDocuments.customerId, customerId));
-  }
-
-  async createCustomerDocument(document: InsertCustomerDocument): Promise<CustomerDocument> {
-    const [newDocument] = await db
-      .insert(customerDocuments)
-      .values(document)
-      .returning();
-    return newDocument;
-  }
-
-  async updateCustomerDocument(
-    id: number,
-    document: Partial<InsertCustomerDocument>
-  ): Promise<CustomerDocument> {
-    const [updatedDocument] = await db
-      .update(customerDocuments)
-      .set({ ...document, updatedAt: new Date() })
-      .where(eq(customerDocuments.id, id))
-      .returning();
-    if (!updatedDocument) throw new Error("Document not found");
-    return updatedDocument;
-  }
-
-  async deleteCustomerDocument(id: number): Promise<void> {
-    await db
-      .delete(customerDocuments)
-      .where(eq(customerDocuments.id, id));
-  }
-
-  async getCustomerInsurance(customerId: number): Promise<CustomerInsurance[]> {
-    return await db
-      .select()
-      .from(customerInsurance)
-      .where(eq(customerInsurance.customerId, customerId));
-  }
-
-  async createCustomerInsurance(insurance: InsertCustomerInsurance): Promise<CustomerInsurance> {
-    const [newInsurance] = await db
-      .insert(customerInsurance)
-      .values(insurance)
-      .returning();
-    return newInsurance;
-  }
-
-  async updateCustomerInsurance(
-    id: number,
-    insurance: Partial<InsertCustomerInsurance>
-  ): Promise<CustomerInsurance> {
-    const [updatedInsurance] = await db
-      .update(customerInsurance)
-      .set({ ...insurance, updatedAt: new Date() })
-      .where(eq(customerInsurance.id, id))
-      .returning();
-    if (!updatedInsurance) throw new Error("Insurance not found");
-    return updatedInsurance;
-  }
-
-  async createDigitalSignature(signature: InsertDigitalSignature): Promise<DigitalSignature> {
-    const [newSignature] = await db
-      .insert(digitalSignatures)
-      .values(signature)
-      .returning();
-    return newSignature;
-  }
-
-  async getDocumentSignatures(documentId: number): Promise<DigitalSignature[]> {
-    return await db
-      .select()
-      .from(digitalSignatures)
-      .where(eq(digitalSignatures.documentId, documentId));
   }
 
   async updateCustomerAutopay(
@@ -377,16 +184,14 @@ export class DatabaseStorage implements IStorage {
     method?: Record<string, any>,
     day?: number
   ): Promise<Customer> {
-    const [updatedCustomer] = await db
-      .update(customers)
-      .set({ 
-        autopayEnabled: enabled,
-        autopayMethod: method ? method : null,
-        autopayDay: day ?? null,
-        recurringBillingStatus: enabled ? "active" : "not_activated"
-      })
-      .where(eq(customers.id, customerId))
-      .returning();
+    await db.update(customers).set({ 
+      autopayEnabled: enabled,
+      autopayMethod: method ? method : null,
+      autopayDay: day ?? null,
+      recurringBillingStatus: enabled ? "active" : "not_activated"
+    }).where(eq(customers.id, customerId));
+
+    const [updatedCustomer] = await db.select().from(customers).where(eq(customers.id, customerId));
     if (!updatedCustomer) throw new Error("Customer not found");
     return updatedCustomer;
   }

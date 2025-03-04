@@ -1,70 +1,70 @@
-import { pgTable, text, serial, integer, boolean, jsonb, timestamp, decimal } from "drizzle-orm/pg-core";
+import { mysqlTable, text, int, boolean, json, timestamp, decimal } from "drizzle-orm/mysql-core";
 import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
 export const unitTypes = ["small", "medium", "large", "extra-large"] as const;
 
-export const units = pgTable("units", {
-  unit_id: serial("unit_id").primaryKey(),
-  type: text("type", { enum: unitTypes }).notNull(),
+export const units = mysqlTable("units", {
+  unit_id: int("unit_id").primaryKey().autoincrement(),
+  type: text("type").notNull(),
   size: text("size").notNull(),
-  price: integer("price").notNull(),
+  price: int("price").notNull(),
   isOccupied: boolean("is_occupied").notNull().default(false),
   location: text("location").notNull(),
-  pricingGroupId: integer("pricing_group_id"),
-  customerId: integer("customer_id"), 
+  pricingGroupId: int("pricing_group_id"),
+  customerId: int("customer_id"),
 });
 
-export const customers = pgTable("customers", {
-  id: serial("id").primaryKey(),
+export const customers = mysqlTable("customers", {
+  id: int("id").primaryKey().autoincrement(),
   name: text("name").notNull(),
   email: text("email").notNull(),
   phone: text("phone").notNull(),
   address: text("address"),
   accessCode: text("access_code"),
-  accountStatus: text("account_status", { enum: ["enabled", "disabled"] }).notNull().default("enabled"),
-  recurringBillingStatus: text("recurring_billing_status", { enum: ["active", "not_activated"] }).notNull().default("not_activated"),
+  accountStatus: text("account_status").notNull().default("enabled"),
+  recurringBillingStatus: text("recurring_billing_status").notNull().default("not_activated"),
   autopayEnabled: boolean("autopay_enabled").notNull().default(false),
-  autopayMethod: jsonb("autopay_method"),
-  autopayDay: integer("autopay_day"), 
+  autopayMethod: json("autopay_method"),
+  autopayDay: int("autopay_day"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
-export const leads = pgTable("leads", {
-  id: serial("id").primaryKey(),
+export const leads = mysqlTable("leads", {
+  id: int("id").primaryKey().autoincrement(),
   name: text("name").notNull(),
   email: text("email").notNull(),
   phone: text("phone").notNull(),
-  status: text("status", { enum: ["new", "contacted", "qualified", "converted", "lost"] }).notNull(),
+  status: text("status").notNull(),
   notes: text("notes"),
-  unitTypeInterest: text("unit_type_interest", { enum: unitTypes }),
+  unitTypeInterest: text("unit_type_interest"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
-export const pricingGroups = pgTable("pricing_groups", {
-  id: serial("id").primaryKey(),
+export const pricingGroups = mysqlTable("pricing_groups", {
+  id: int("id").primaryKey().autoincrement(),
   name: text("name").notNull(),
   description: text("description"),
   multiplier: decimal("multiplier").notNull(),
 });
 
-export const payments = pgTable("payments", {
-  id: serial("id").primaryKey(),
-  bookingId: integer("booking_id").notNull(),
-  amount: integer("amount").notNull(),
-  status: text("status", { enum: ["pending", "completed", "failed", "refunded"] }).notNull(),
+export const payments = mysqlTable("payments", {
+  id: int("id").primaryKey().autoincrement(),
+  bookingId: int("booking_id").notNull(),
+  amount: int("amount").notNull(),
+  status: text("status").notNull(),
   transactionId: text("transaction_id"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
-export const bookings = pgTable("bookings", {
-  id: serial("id").primaryKey(),
-  unitId: integer("unit_id").notNull(),
-  customerId: integer("customer_id").notNull(),
+export const bookings = mysqlTable("bookings", {
+  id: int("id").primaryKey().autoincrement(),
+  unitId: int("unit_id").notNull(),
+  customerId: int("customer_id").notNull(),
   startDate: text("start_date").notNull(),
   endDate: text("end_date"),
-  status: text("status", { enum: ["active", "completed", "cancelled"] }).notNull(),
+  status: text("status").notNull(),
   monthlyRate: decimal("monthly_rate").notNull(),
   nextBillDate: text("next_bill_date").notNull(),
   insuranceAmount: decimal("insurance_amount"),
@@ -99,64 +99,59 @@ export const unitSizeInfo = {
   "extra-large": { size: "10x20", price: 200, image: "https://images.unsplash.com/photo-1719937050988-dd510cf0e512" }
 };
 
-export const facilityLayouts = pgTable("facility_layouts", {
-  id: serial("id").primaryKey(),
-  facilityId: integer("facility_id").notNull(),
+export const facilityLayouts = mysqlTable("facility_layouts", {
+  id: int("id").primaryKey().autoincrement(),
+  facilityId: int("facility_id").notNull(),
   name: text("name").notNull(),
   description: text("description"),
-  layout: jsonb("layout").notNull(),  
-  dimensions: jsonb("dimensions").notNull(), 
+  layout: json("layout").notNull(),
+  dimensions: json("dimensions").notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
 // Add new schema and types for facility layouts
-export const insertFacilityLayoutSchema = createInsertSchema(facilityLayouts).omit({ 
-  id: true, 
+export const insertFacilityLayoutSchema = createInsertSchema(facilityLayouts).omit({
+  id: true,
   createdAt: true,
-  updatedAt: true 
+  updatedAt: true
 });
 
 export type FacilityLayout = typeof facilityLayouts.$inferSelect;
 export type InsertFacilityLayout = z.infer<typeof insertFacilityLayoutSchema>;
 
-export const notificationTemplates = pgTable("notification_templates", {
-  id: serial("id").primaryKey(),
+export const notificationTemplates = mysqlTable("notification_templates", {
+  id: int("id").primaryKey().autoincrement(),
   name: text("name").notNull(),
-  type: text("type", { enum: ["email", "sms"] }).notNull(),
+  type: text("type").notNull(),
   subject: text("subject"),
   content: text("content").notNull(),
-  trigger: text("trigger", { 
-    enum: ["payment_late", "payment_due", "lien_warning", "lien_filed", "custom"] 
-  }).notNull(),
-  // For custom triggers
-  triggerConditions: jsonb("trigger_conditions"),
+  trigger: text("trigger").notNull(),
+  triggerConditions: json("trigger_conditions"),
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
-export const notificationLogs = pgTable("notification_logs", {
-  id: serial("id").primaryKey(),
-  templateId: integer("template_id").notNull(),
-  customerId: integer("customer_id").notNull(),
-  status: text("status", { 
-    enum: ["queued", "sent", "failed"] 
-  }).notNull(),
+export const notificationLogs = mysqlTable("notification_logs", {
+  id: int("id").primaryKey().autoincrement(),
+  templateId: int("template_id").notNull(),
+  customerId: int("customer_id").notNull(),
+  status: text("status").notNull(),
   sentAt: timestamp("sent_at"),
   errorMessage: text("error_message"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
 // Add new schemas
-export const insertNotificationTemplateSchema = createInsertSchema(notificationTemplates).omit({ 
+export const insertNotificationTemplateSchema = createInsertSchema(notificationTemplates).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
   isActive: true
 });
 
-export const insertNotificationLogSchema = createInsertSchema(notificationLogs).omit({ 
+export const insertNotificationLogSchema = createInsertSchema(notificationLogs).omit({
   id: true,
   createdAt: true,
   sentAt: true
@@ -169,56 +164,52 @@ export type InsertNotificationTemplate = z.infer<typeof insertNotificationTempla
 export type InsertNotificationLog = z.infer<typeof insertNotificationLogSchema>;
 
 
-export const customerDocuments = pgTable("customer_documents", {
-  id: serial("id").primaryKey(),
-  customerId: integer("customer_id").notNull(),
+export const customerDocuments = mysqlTable("customer_documents", {
+  id: int("id").primaryKey().autoincrement(),
+  customerId: int("customer_id").notNull(),
   name: text("name").notNull(),
-  type: text("type", { 
-    enum: ["lease_agreement", "insurance_policy", "id_proof", "other"] 
-  }).notNull(),
+  type: text("type").notNull(),
   fileUrl: text("file_url").notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
-export const customerInsurance = pgTable("customer_insurance", {
-  id: serial("id").primaryKey(),
-  customerId: integer("customer_id").notNull(),
+export const customerInsurance = mysqlTable("customer_insurance", {
+  id: int("id").primaryKey().autoincrement(),
+  customerId: int("customer_id").notNull(),
   provider: text("provider").notNull(),
   policyNumber: text("policy_number").notNull(),
-  coverageAmount: integer("coverage_amount").notNull(),
+  coverageAmount: int("coverage_amount").notNull(),
   startDate: timestamp("start_date").notNull(),
   endDate: timestamp("end_date").notNull(),
-  status: text("status", { 
-    enum: ["active", "expired", "cancelled"] 
-  }).notNull(),
+  status: text("status").notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
-export const digitalSignatures = pgTable("digital_signatures", {
-  id: serial("id").primaryKey(),
-  customerId: integer("customer_id").notNull(),
-  documentId: integer("document_id").notNull(),
+export const digitalSignatures = mysqlTable("digital_signatures", {
+  id: int("id").primaryKey().autoincrement(),
+  customerId: int("customer_id").notNull(),
+  documentId: int("document_id").notNull(),
   signatureData: text("signature_data").notNull(),
   ipAddress: text("ip_address").notNull(),
   signedAt: timestamp("signed_at").notNull().defaultNow(),
 });
 
 // Add new schemas
-export const insertCustomerDocumentSchema = createInsertSchema(customerDocuments).omit({ 
+export const insertCustomerDocumentSchema = createInsertSchema(customerDocuments).omit({
   id: true,
   createdAt: true,
   updatedAt: true
 });
 
-export const insertCustomerInsuranceSchema = createInsertSchema(customerInsurance).omit({ 
+export const insertCustomerInsuranceSchema = createInsertSchema(customerInsurance).omit({
   id: true,
   createdAt: true,
   updatedAt: true
 });
 
-export const insertDigitalSignatureSchema = createInsertSchema(digitalSignatures).omit({ 
+export const insertDigitalSignatureSchema = createInsertSchema(digitalSignatures).omit({
   id: true,
   signedAt: true
 });
@@ -232,27 +223,27 @@ export type InsertCustomerInsurance = z.infer<typeof insertCustomerInsuranceSche
 export type InsertDigitalSignature = z.infer<typeof insertDigitalSignatureSchema>;
 
 // Added StorageManagerData table definition here
-export const storageManagerData = pgTable("StorageManagerData", {
-  id: serial("id").primaryKey(),
-  facilityId: integer("facility_id").notNull(),
+export const storageManagerData = mysqlTable("StorageManagerData", {
+  id: int("id").primaryKey().autoincrement(),
+  facilityId: int("facility_id").notNull(),
   facilityName: text("facility_name").notNull(),
   facilityCode: text("facility_code").notNull(),
-  layoutId: integer("layout_id").references(() => facilityLayouts.id),
-  pricingGroupId: integer("pricing_group_id").references(() => pricingGroups.id),
-  totalUnits: integer("total_units").notNull(),
-  availableUnits: integer("available_units").notNull(),
-  occupiedUnits: integer("occupied_units").notNull(),
-  maintenanceUnits: integer("maintenance_units").notNull(),
+  layoutId: int("layout_id"),
+  pricingGroupId: int("pricing_group_id"),
+  totalUnits: int("total_units").notNull(),
+  availableUnits: int("available_units").notNull(),
+  occupiedUnits: int("occupied_units").notNull(),
+  maintenanceUnits: int("maintenance_units").notNull(),
   totalRevenue: decimal("total_revenue").notNull().default("0"),
   pendingPayments: decimal("pending_payments").notNull().default("0"),
   overduePayments: decimal("overdue_payments").notNull().default("0"),
-  totalCustomers: integer("total_customers").notNull().default(0),
-  activeCustomers: integer("active_customers").notNull().default(0),
-  overdueCustomers: integer("overdue_customers").notNull().default(0),
-  totalBookings: integer("total_bookings").notNull().default(0),
-  activeBookings: integer("active_bookings").notNull().default(0),
-  totalLeads: integer("total_leads").notNull().default(0),
-  convertedLeads: integer("converted_leads").notNull().default(0),
+  totalCustomers: int("total_customers").notNull().default(0),
+  activeCustomers: int("active_customers").notNull().default(0),
+  overdueCustomers: int("overdue_customers").notNull().default(0),
+  totalBookings: int("total_bookings").notNull().default(0),
+  activeBookings: int("active_bookings").notNull().default(0),
+  totalLeads: int("total_leads").notNull().default(0),
+  convertedLeads: int("converted_leads").notNull().default(0),
   lastUpdated: timestamp("last_updated").notNull().defaultNow(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
@@ -262,7 +253,7 @@ export type StorageManagerData = typeof storageManagerData.$inferSelect;
 export type InsertStorageManagerData = typeof storageManagerData.$inferInsert;
 
 // Update exports
-export type { 
+export type {
   Unit, Customer, Booking, Lead, PricingGroup, Payment,
   InsertUnit, InsertCustomer, InsertBooking, InsertLead, InsertPricingGroup, InsertPayment,
   FacilityLayout, InsertFacilityLayout,
