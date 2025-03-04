@@ -133,9 +133,12 @@ Each entity is defined in `shared/schema.ts` using Drizzle ORM with proper relat
 
 ## Quick Start Guide
 
-1. **Clone the Repository**
+1. **Create and Clone the Repository**
+   First, create a new repository named "SelfStorageManager-2" on your GitHub account.
+   Then clone it:
    ```bash
-   git clone https://github.com/YOUR-USERNAME/SelfStorageManager-2.git
+   # Replace [your-github-username] with your actual GitHub username
+   git clone https://github.com/[your-github-username]/SelfStorageManager-2.git
    cd SelfStorageManager-2
    ```
 
