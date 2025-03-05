@@ -1,6 +1,21 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import dotenv from "dotenv";
+import fs from "fs";
+import path from "path";
+
+const envPath = path.resolve(process.cwd(), ".env");
+console.log("Checking .env at:", envPath);
+console.log("Does .env exist?", fs.existsSync(envPath));
+
+dotenv.config({ path: envPath });
+
+console.log("DATABASE_URL (after dotenv.config):", process.env.DATABASE_URL);
+
+if (!process.env.DATABASE_URL) {
+  throw new Error("DATABASE_URL is still missing!");
+}
 
 const app = express();
 app.use(express.json());
